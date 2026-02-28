@@ -2,7 +2,6 @@ import { compare, hash } from "bcrypt";
 import {
   CREATE_USER,
   GET_USER_BY_EMAIL,
-  GET_USER_BY_ID,
   UPDATE_USER_PASSWORD,
 } from "./constants.js";
 import {
@@ -20,7 +19,13 @@ const FRONTEND_URL =
 
 export class AuthController {
   cookieExpiration = 60 * 60 * 24 * 1000;
-
+  COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  };
+  
   constructor({ db }) {
     this.db = db;
   }
@@ -49,11 +54,7 @@ export class AuthController {
       const token = await createAccessToken({ id: user.user_id });
 
       res.cookie("pascale_token", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-        maxAge: this.cookieExpiration,
-        path: "/"
+        ...this.COOKIE_OPTIONS, maxAge: this.cookieExpiration
       });
 
       return res.status(200).json({ message: "Ingreso exitoso", user });
@@ -78,8 +79,8 @@ export class AuthController {
         postalCode,
       } = req.body;
 
-      if (!name || !lastName || !email || !password || !role)
-        return res.status(400).json({ message: "Faltan paramámetros en cuerpo" });
+      if (!name || !lastName || !email || !password)
+        return res.status(400).json({ message: "Campos vacíos" });
 
       const userExist = await this.db.query(GET_USER_BY_EMAIL, [email]);
       const userFound = this.getFirstRow(userExist);
@@ -108,11 +109,7 @@ export class AuthController {
       const token = await createAccessToken({ id: newUser.user_id });
 
       res.cookie("pascale_token", token, {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-        maxAge: this.cookieExpiration,
-        path: "/"
+        ...this.COOKIE_OPTIONS, maxAge: this.cookieExpiration
       });
 
       await sendEmail({ to: email, userName: name });
@@ -129,20 +126,11 @@ export class AuthController {
 
   userLogout = async (req, res) => {
     try {
-      const id = req.userId;
-      const result = await this.db.query(GET_USER_BY_ID, [id]);
-      const user = this.getFirstRow(result);
-
       res.clearCookie("pascale_token", {
-        httpOnly: true,
-        sameSite: "lax",
-        secure: true,
-        path: "/",
+        ...this.COOKIE_OPTIONS, maxAge: 0
       });
 
-      return res
-        .status(200)
-        .json({ message: "Sesión cerrada correctamente", user: user });
+      return res.status(200).json({ message: "Sesión cerrada correctamente" });
     } catch (error) {
       return res
         .status(500)
@@ -219,11 +207,7 @@ export class AuthController {
       }
 
       const hashedPassword = await hash(password, 10);
-      await this.db.query(UPDATE_USER_PASSWORD, [
-        userId,
-        hashedPassword,
-        true,
-      ]);
+      await this.db.query(UPDATE_USER_PASSWORD, [userId, hashedPassword, true]);
 
       res.clearCookie("pascale_reset_token", {
         httpOnly: true,
