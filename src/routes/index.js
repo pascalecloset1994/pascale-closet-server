@@ -19,7 +19,7 @@ export const createAppRouter = ({ db }) => {
    } catch (error) {
       res.status(500).json({ message: "No se ha podido conectar al servidor." })
    }
-  })
+  });
   
   return appRouter;
 };

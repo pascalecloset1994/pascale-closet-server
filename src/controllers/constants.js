@@ -8,10 +8,12 @@ const UPDATE_USER = "UPDATE pascale_users SET name = $2, lastname = $3, email = 
 const UPDATE_PARTIAL_USER = "UPDATE pascale_users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = $6 WHERE user_id = $1 RETURNING *;";
 const UPDATE_USER_PASSWORD = "UPDATE pascale_users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;";
 const DELETE_USER = "DELETE FROM pascale_users WHERE user_id = $1 RETURNING *;";
-const GET_HERO = "SELECT * FROM user_hero WHERE id = 1;";
-const GET_FOOTER = "SELECT * FROM user_footer WHERE id = 1;";
-const UPDATE_HERO = "UPDATE user_hero SET updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, updated = $5, url_image = $6 WHERE ID = $1 RETURNING *;"
-const UPDATE_FOOTER = "UPDATE user_footer SET updated_at = NOW(), title = $2, location = $3, schedule = $4, updated = $5, url_image = $6 WHERE ID = $1 RETURNING *;"
+
+// USER EDITABLE CONTENT
+const GET_HERO = "SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = 1;";
+const GET_FOOTER = "SELECT footer_title, footer_location, footer_schedule footer_ur_image, footer_updated footer updated_at FROM user_content WHERE id = 1;";
+const UPDATE_HERO = "UPDATE user_content SET updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, updated = $5, url_image = $6 WHERE ID = $1 RETURNING *;"
+const UPDATE_FOOTER = "UPDATE user_content SET updated_at = NOW(), title = $2, location = $3, schedule = $4, updated = $5, url_image = $6 WHERE ID = $1 RETURNING *;"
 
 // PRODUCTOS
 const GET_ALL_PRODUCTS = "SELECT * FROM products;"
