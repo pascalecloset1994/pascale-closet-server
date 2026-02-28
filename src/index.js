@@ -21,14 +21,6 @@ app.use(express.urlencoded({ extended: false, limit: "10mb" }));
 app.disable("x-powered-by");
 app.use(createAppRouter({ db: neonDB }));
 
-app.get("/health", async (req, res) => {
-    try {
-        res.status(200).json({ message: "Se ha conctado con exito al servidor." })
-    } catch (error) {
-        res.status(500).json({ message: "No se ha podido conectar al servidor." })
-    }
-})
-
 app.listen(3000, () => {
     console.log("Servidor corriendo en http://localhost:3000")
 })

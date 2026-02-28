@@ -13,6 +13,13 @@ export const createAppRouter = ({ db }) => {
   appRouter.use(createProductsRouter({ db }));
   appRouter.use(createOrderRouter({ db }));
   appRouter.use("/payment", createPaymentRouter({ db }));
+  appRouter.get("/health", async (req, res) => {
+  try {
+      res.status(200).json({ success: true, message: "Se ha conectado con exito al servidor." })
+   } catch (error) {
+      res.status(500).json({ message: "No se ha podido conectar al servidor." })
+   }
+  })
   
   return appRouter;
 };
