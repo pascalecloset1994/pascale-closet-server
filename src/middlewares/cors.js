@@ -1,7 +1,8 @@
 import cors from "cors";
 
 const ALLOWED_ORIGINS = [
-  "https://pascale-closet.vercel.app",
+  "https://pascalecloset.com",
+  "https://www.pascalecloset.com",
   "http://localhost:5173",
 ];
 
