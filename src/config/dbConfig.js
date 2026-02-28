@@ -1,18 +1,11 @@
-import { Pool } from "pg";
+import { neon } from "@neondatabase/serverless";
+import path from "path";
 
 if (process.env.NODE_ENV !== "production") {
-  process.loadEnvFile(".env");
+  process.loadEnvFile(path.join(process.cwd(), "/.env"));
 }
 
-export const pgRailwayDB = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+// const { PGUSER, PGPASSWORD, PGHOST, PGDATABASE } = process.env;
+// const URL = `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}/${PGDATABASE}?sslmode=require&channel_binding=require`
 
-pgRailwayDB.on("connect", () => {
-  console.log("Conectado a la base de de datos");
-});
-
-pgRailwayDB.on("error", () => {
-  console.log("Algo pasó...")
-})
+export const neonDB = neon(process.env.DATABASE_URL);
