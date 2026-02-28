@@ -16,7 +16,7 @@ import {
 } from "../services/mail.service.js";
 
 const FRONTEND_URL =
-  process.env.FRONTEND_URL || "https://pascale-closet.vercel.app";
+  process.env.FRONTEND_URL || "https://pascalecloset.com";
 
 export class AuthController {
   cookieExpiration = 60 * 60 * 24 * 1000;
@@ -78,8 +78,8 @@ export class AuthController {
         postalCode,
       } = req.body;
 
-      if (!name || !lastName || !email || !password)
-        return res.status(400).json({ message: "Campos vacíos" });
+      if (!name || !lastName || !email || !password || !role)
+        return res.status(400).json({ message: "Faltan paramámetros en cuerpo" });
 
       const userExist = await this.db.query(GET_USER_BY_EMAIL, [email]);
       const userFound = this.getFirstRow(userExist);
