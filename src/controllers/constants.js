@@ -1,13 +1,13 @@
 // USUARIOS
-const GET_ALL_USERS = "SELECT * FROM pascale_users;";
-const GET_USER_BY_ID = "SELECT * FROM pascale_users WHERE user_id = $1;";
-const GET_USER_BY_EMAIL = "SELECT * FROM pascale_users WHERE email = $1;";
-const CREATE_USER = `INSERT INTO pascale_users (name, lastname, email, password, role, ip, city, country, postal_code)
+const GET_ALL_USERS = "SELECT * FROM users;";
+const GET_USER_BY_ID = "SELECT * FROM users WHERE user_id = $1;";
+const GET_USER_BY_EMAIL = "SELECT * FROM users WHERE email = $1;";
+const CREATE_USER = `INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;`;
-const UPDATE_USER = "UPDATE pascale_users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = $6, avatar = $7, city = $8, country = $9, postal_code = $10 WHERE user_id = $1 RETURNING *;";
-const UPDATE_PARTIAL_USER = "UPDATE pascale_users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = $6 WHERE user_id = $1 RETURNING *;";
-const UPDATE_USER_PASSWORD = "UPDATE pascale_users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;";
-const DELETE_USER = "DELETE FROM pascale_users WHERE user_id = $1 RETURNING *;";
+const UPDATE_USER = "UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = $6, avatar = $7, city = $8, country = $9, postal_code = $10 WHERE user_id = $1 RETURNING *;";
+const UPDATE_PARTIAL_USER = "UPDATE users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = $6 WHERE user_id = $1 RETURNING *;";
+const UPDATE_USER_PASSWORD = "UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;";
+const DELETE_USER = "DELETE FROM users WHERE user_id = $1 RETURNING *;";
 
 // USER EDITABLE CONTENT
 const GET_HERO = "SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = 1;";
