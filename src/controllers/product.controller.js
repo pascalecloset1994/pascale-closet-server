@@ -4,6 +4,7 @@ import {
   GET_ALL_PRODUCTS,
   GET_ALL_PRODUCTS_BY_USER_ID,
   GET_PRODUCT_BY_ID,
+  UPDATE_PRODUCT,
 } from "./constants.js";
 import { updateToBlob } from "../services/vercelBlob.service.js";
 
@@ -110,16 +111,32 @@ export class ProductController {
 
   updateProduct = async (req, res) => {
     const { id } = req.params;
-    const { name, description, category, price, stock, brand, temp, size, color, image } = req.body;
+    const files = req.files || [];
+    const { name, description, category, price, stock, condition, brand, temp, size, color } = req.body;
+
     try {
-      let imgUrl = null
-      if (image) {
-        imgUrl = await updateToBlob(image)
+      let imageJson = null;
+      if (files.length > 0) {
+        const imageUrls = await Promise.all(
+          files.map(file => updateToBlob(file))
+        );
+        imageJson = JSON.stringify(imageUrls);
       }
-      const result = await this.db.query(
-        "UPDATE products SET name = $1, description = $2, category = $3 price = $4 stock = $5 brand = $6 temp = $7 temp = $8 size = $9 color = $10 image = $11 WHERE id = $12 RETURNING *",
-        [name, description, category, price, stock, brand, temp, size, color, imgUrl, id]
-      );
+
+      const result = await this.db.query(UPDATE_PRODUCT, [
+        name,
+        description,
+        category,
+        price,
+        stock,
+        condition,
+        imageJson,
+        brand,
+        temp,
+        size,
+        color,
+        id,
+      ]);
       const updatedProduct = this.getFirstRow(result);
 
       if (!updatedProduct)

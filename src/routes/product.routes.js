@@ -12,7 +12,7 @@ export const createProductsRouter = ({ db }) => {
   productsRouter.get("/products", isAuth, productController.getAllProductsByUserId);
   productsRouter.get("/product/:id", isAuth, productController.getProductById);
   productsRouter.post("/product", upload.array("images", 3), productController.createProduct);
-  productsRouter.put("/product/:id", isAuth, productController.updateProduct);
+  productsRouter.put("/product/:id", isAuth, upload.array("images", 3), productController.updateProduct);
   productsRouter.delete("/product/:id", isAuth, productController.deleteProduct);
 
   return productsRouter;

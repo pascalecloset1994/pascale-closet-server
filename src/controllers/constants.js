@@ -21,7 +21,7 @@ const GET_ALL_PRODUCTS_BY_USER_ID = "SELECT * FROM products WHERE user_id = $1;"
 const GET_PRODUCT_BY_ID = "SELECT * FROM products WHERE id = $1;";
 const CREATE_PRODUCT = `INSERT INTO products (name, price, stock, condition, image, description, brand, temp, size, color, category, user_id)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;`;
-const UPDATE_PRODUCT = "UPDATE products SET name = $1, price = $2, stock = $3 WHERE id = $4 RETURNING *;";
+const UPDATE_PRODUCT = "UPDATE products SET name = $1, description = $2, category = $3, price = $4, stock = $5, condition = $6, image = $7, brand = $8, temp = $9, size = $10, color = $11 WHERE id = $12 RETURNING *;";
 const DELETE_PRODUCT = "DELETE FROM products WHERE id = $1 RETURNING *;";
 
 export {
