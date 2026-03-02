@@ -131,6 +131,11 @@ export class AuthController {
         ...this.COOKIE_OPTIONS,
         maxAge: 0,
       });
+      res.clearCookie("pascale_token", {
+        ...this.COOKIE_OPTIONS,
+        domain: "api.pascalecloset.com",
+        maxAge: 0
+      });
 
       return res.status(200).json({ message: "Sesión cerrada correctamente" });
     } catch (error) {
