@@ -25,7 +25,7 @@ export class AuthController {
     sameSite: "none",
     path: "/",
   };
-  
+
   constructor({ db }) {
     this.db = db;
   }
@@ -126,7 +126,7 @@ export class AuthController {
 
   userLogout = async (req, res) => {
     try {
-      res.clearCookie("pascale_token", {
+      res.cookie("pascale_token", {
         ...this.COOKIE_OPTIONS, maxAge: 0
       });
 
