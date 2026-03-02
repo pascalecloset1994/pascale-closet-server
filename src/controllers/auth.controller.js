@@ -127,6 +127,7 @@ export class AuthController {
 
   userLogout = async (req, res) => {
     try {
+      res.setHeader("Cache-Control", "no-store");
       const base = {
         ...this.COOKIE_OPTIONS,
         expires: new Date(0),
