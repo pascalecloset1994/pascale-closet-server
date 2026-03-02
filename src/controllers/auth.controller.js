@@ -126,7 +126,7 @@ export class AuthController {
 
   userLogout = async (req, res) => {
     try {
-      res.cookie("pascale_token", {
+      res.clearCookie("pascale_token", {
         ...this.COOKIE_OPTIONS, maxAge: 0
       });
 
