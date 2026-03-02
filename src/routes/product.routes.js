@@ -11,7 +11,7 @@ export const createProductsRouter = ({ db }) => {
   productsRouter.get("/list-products", productController.listAllProducts)
   productsRouter.get("/products", isAuth, productController.getAllProductsByUserId);
   productsRouter.get("/product/:id", isAuth, productController.getProductById);
-  productsRouter.post("/product", upload.single("image"), productController.createProduct);
+  productsRouter.post("/product", upload.array("images", 3), productController.createProduct);
   productsRouter.put("/product/:id", isAuth, productController.updateProduct);
   productsRouter.delete("/product/:id", isAuth, productController.deleteProduct);
 

@@ -62,7 +62,7 @@ export class ProductController {
   };
 
   createProduct = async (req, res) => {
-    const file = req.file ?? null;
+    const files = req.files || [];
     const {
       name,
       price,
@@ -77,14 +77,17 @@ export class ProductController {
       user_id,
     } = req.body;
 
-    const imageUrl = file ? await updateToBlob(file) : null;
     try {
+      const imageUrls = await Promise.all(
+        files.map(file => updateToBlob(file))
+      );
+
       const result = await this.db.query(CREATE_PRODUCT, [
         name,
         price,
         stock,
         condition,
-        imageUrl,
+        JSON.stringify(imageUrls),
         description,
         brand,
         temp,
@@ -93,9 +96,11 @@ export class ProductController {
         category,
         user_id,
       ]);
+
       const newProduct = this.getFirstRow(result);
 
       return res.status(201).json({ product: newProduct });
+
     } catch (error) {
       return res
         .status(500)
