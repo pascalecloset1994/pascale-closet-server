@@ -95,7 +95,7 @@ export class ProductController {
       ]);
       const newProduct = this.getFirstRow(result);
 
-      return res.status(201).json(newProduct);
+      return res.status(201).json({ product: newProduct });
     } catch (error) {
       return res
         .status(500)
