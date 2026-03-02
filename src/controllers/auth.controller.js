@@ -24,6 +24,7 @@ export class AuthController {
     secure: true,
     sameSite: "none",
     path: "/",
+    domain: ".pascalecloset.com"
   };
 
   constructor({ db }) {
