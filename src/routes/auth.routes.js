@@ -8,7 +8,7 @@ export const createAuthRouter = ({ db }) => {
 
   authRouter.post("/signup", authController.signUp);
   authRouter.post("/login", authController.userLogin);
-  authRouter.get("/logout", authController.userLogout);
+  authRouter.post("/logout", authController.userLogout);
   authRouter.post("/recovery-password", authController.recoveryPassword);
   authRouter.post("/reset-password", authController.resetPassword);
 
