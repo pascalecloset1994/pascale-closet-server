@@ -128,7 +128,8 @@ export class AuthController {
   userLogout = async (req, res) => {
     try {
       res.clearCookie("pascale_token", {
-        ...this.COOKIE_OPTIONS, maxAge: 0
+        ...this.COOKIE_OPTIONS,
+        maxAge: 0,
       });
 
       return res.status(200).json({ message: "Sesión cerrada correctamente" });
