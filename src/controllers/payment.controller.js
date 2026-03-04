@@ -29,15 +29,14 @@ export class PaymentController {
           currency_id: "ARS",
           unit_price: Number(p.price),
         })),
-        payer: { id: user_id },
         back_urls: {
           success: `${process.env.FRONT_URL}/order-confirmation/${order.order_id}`,
           failure: `${process.env.FRONT_URL}/failure`,
         },
         auto_return: "approved",
-        metadata: { 
+        metadata: {
           order_id: order.order_id,
-          user_id: user_id 
+          user_id: user_id
         },
         // Importante: agregar notification_url para recibir webhooks
         // El parámetro source_news=webhooks asegura que solo recibas webhooks, no IPN
@@ -202,7 +201,7 @@ export class PaymentController {
       res.sendStatus(200);
     } catch (error) {
       console.error("❌ Error en webhook:", error.message || error);
-      
+
       // Guardar error para debug
       try {
         await this.db.query(
@@ -212,7 +211,7 @@ export class PaymentController {
       } catch (dbError) {
         console.error("Error guardando en webhook_errors:", dbError);
       }
-      
+
       // Devolver 200 para que MP no reintente, pero el error ya se guardó
       res.sendStatus(200);
     }
