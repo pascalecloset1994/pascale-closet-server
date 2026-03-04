@@ -176,6 +176,7 @@ export class UserController {
 
   updateUserClientHero = async (req, res) => {
     try {
+      const { id } = req.params;
       const file = req.file ?? null;
       const { heroCollection, heroTitle, heroSubTitle } = req.body;
 
@@ -187,6 +188,7 @@ export class UserController {
 
       const imageUrl = file ? await updateToBlob(file) : null;
       const result = await this.db.query(UPDATE_HERO, [
+        id,
         heroCollection,
         heroTitle,
         heroSubTitle,
