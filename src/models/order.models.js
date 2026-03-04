@@ -75,7 +75,8 @@ export class OrderModel {
         this.generateOrderNumber(),
       ]);
 
-      const orderId = result[0].id;
+      const row = result?.rows?.[0] || result?.[0];
+      const orderId = row.id;
 
       const insertItem = `
           INSERT INTO order_items (order_id, product_id, quantity, price)
