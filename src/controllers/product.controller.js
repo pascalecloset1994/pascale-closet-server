@@ -112,15 +112,28 @@ export class ProductController {
   updateProduct = async (req, res) => {
     const { id } = req.params;
     const files = req.files || [];
-    const { name, description, category, price, stock, condition, brand, temp, size, color } = req.body;
+    const { name, description, category, price, stock, condition, brand, temp, size, color, existing_images } = req.body;
 
     try {
       let imageJson = null;
-      if (files.length > 0) {
-        const imageUrls = await Promise.all(
-          files.map(file => updateToBlob(file))
-        );
-        imageJson = JSON.stringify(imageUrls);
+
+      // Process new uploaded files
+      const newImageUrls = files.length > 0
+        ? await Promise.all(files.map(file => updateToBlob(file)))
+        : [];
+
+      // Parse existing image URLs sent from the frontend
+      const existingUrls = existing_images ? JSON.parse(existing_images) : [];
+
+      // Combine existing + new images
+      const allImages = [...existingUrls, ...newImageUrls];
+
+      if (allImages.length > 0) {
+        imageJson = JSON.stringify(allImages);
+      } else {
+        // No new files and no existing images sent — keep current images in DB
+        const currentProduct = this.getFirstRow(await this.db.query(GET_PRODUCT_BY_ID, [id]));
+        imageJson = currentProduct?.image || null;
       }
 
       const result = await this.db.query(UPDATE_PRODUCT, [
