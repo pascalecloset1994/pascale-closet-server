@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Preference, Payment } from "mercadopago";
 import { mpClient } from "../services/mercadoPago.service.js";
 import { sendOrderEmail, sendSellerOrderEmail } from "../services/mail.service.js";
@@ -32,6 +33,7 @@ export class PaymentController {
         back_urls: {
           success: `${process.env.FRONT_URL}/order-confirmation/${order.order_id}`,
           failure: `${process.env.FRONT_URL}/failure`,
+          pending: `${process.env.FRONT_URL}/pending`,
         },
         auto_return: "approved",
         metadata: {
@@ -40,13 +42,13 @@ export class PaymentController {
         },
         // Importante: agregar notification_url para recibir webhooks
         // El parámetro source_news=webhooks asegura que solo recibas webhooks, no IPN
-        notification_url: `${process.env.BACKEND_URL}/payment/webhook?source_news=webhooks`,
+        notification_url: `${process.env.BACK_URL}/payment/webhook?source_news=webhooks`,
       };
 
       const preference = new Preference(mpClient);
       const result = await preference.create({
         body,
-        requestOptions: { idempotencyKey: user_id },
+        requestOptions: { idempotencyKey: crypto.randomUUID() },
       });
 
       res.json({
@@ -65,7 +67,7 @@ export class PaymentController {
     try {
       const { type, data, action } = req.body;
 
-      await this.db.query("INSERT INTO webhook_errors (logs) VALUES ($1);", [JSON.stringify(req.body, null, 2)])
+      await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [JSON.stringify(req.body, null, 2)])
 
       // Validar que sea una notificación de pago
       // Mercado Pago puede enviar: "payment", "payment.created", "payment.updated"
@@ -92,7 +94,7 @@ export class PaymentController {
       const paymentClient = new Payment(mpClient);
       const paymentData = await paymentClient.get({ id: paymentId });
 
-      await this.db.query("INSERT INTO webhook_errors (logs) VALUES ($1);", [JSON.stringify({
+      await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [JSON.stringify({
         title: "💳 Datos del pago recibidos:",
         id: paymentData.id,
         status: paymentData.status,
@@ -107,7 +109,7 @@ export class PaymentController {
 
       // Actualizar la orden según el estado
       if (order_id) {
-        await this.db.query("INSERT INTO webhook_errors (logs) VALUES ($1);", [`📦 Procesando orden ${order_id} con estado: ${status}`])
+        await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [`📦 Procesando orden ${order_id} con estado: ${status}`])
 
         switch (status) {
           case "approved":
@@ -205,11 +207,11 @@ export class PaymentController {
       // Guardar error para debug
       try {
         await this.db.query(
-          "INSERT INTO webhook_errors (error, details, created_at) VALUES ($1, $2, NOW());",
+          "INSERT INTO webhook_logs (error, details, created_at) VALUES ($1, $2, NOW());",
           [error.message || String(error), JSON.stringify(req.body)]
         );
       } catch (dbError) {
-        console.error("Error guardando en webhook_errors:", dbError);
+        console.error("Error guardando en webhook_logs:", dbError);
       }
 
       // Devolver 200 para que MP no reintente, pero el error ya se guardó

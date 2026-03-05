@@ -18,7 +18,7 @@ export class OrderController {
   getOrderById = async (req, res) => {
     const { order_id } = req.params;
     try {
-      const order = this.orderModel.getOrderById(order_id);
+      const order = await this.orderModel.getOrderById(order_id);
       res.status(200).json(order);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener la orden" });
@@ -106,7 +106,7 @@ export class OrderController {
   };
 
   deleteOrder = async (req, res) => {
-     try {
+    try {
       const { order_id } = req.params;
 
       if (!order_id)
