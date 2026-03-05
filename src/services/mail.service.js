@@ -127,7 +127,7 @@ export const sendSellerOrderEmail = async ({
     return info;
   } catch (error) {
     console.error("Error enviando email al vendedor:", error);
-    neonDB.query("INSERT INTO webhook_logs error = $1;", [JSON.stringify(error, null, 2)]);
+    neonDB.query("INSERT INTO webhook_logs (error) VALUES($1);", [JSON.stringify(error, null, 2)]);
   }
 };
 
