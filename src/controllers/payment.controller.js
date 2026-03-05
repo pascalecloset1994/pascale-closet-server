@@ -67,6 +67,48 @@ export class PaymentController {
     try {
       const { type, data, action } = req.body;
 
+      // ── Validación de firma x-signature de Mercado Pago ──
+      const xSignature = req.headers["x-signature"];
+      const xRequestId = req.headers["x-request-id"];
+      const webhookSecret = process.env.MP_WEBHOOK_SECRET;
+
+      if (webhookSecret && xSignature && xRequestId) {
+        // Parsear ts y v1 del header x-signature
+        // Formato: "ts=1234567890,v1=abc123..."
+        const parts = {};
+        xSignature.split(",").forEach((part) => {
+          const [key, ...valueParts] = part.trim().split("=");
+          parts[key] = valueParts.join("=");
+        });
+
+        const ts = parts["ts"];
+        const v1 = parts["v1"];
+
+        // Construir el template para validar
+        // Formato: "id:<data.id>;request-id:<x-request-id>;ts:<ts>;"
+        const dataId = data?.id;
+        let manifest = "";
+        if (dataId) manifest += `id:${dataId};`;
+        manifest += `request-id:${xRequestId};ts:${ts};`;
+
+        // Generar HMAC-SHA256 con el secret
+        const hmac = crypto.createHmac("sha256", webhookSecret);
+        hmac.update(manifest);
+        const generatedHash = hmac.digest("hex");
+
+        if (generatedHash !== v1) {
+          console.warn("⚠️ Firma de webhook inválida. Posible intento de suplantación.");
+          await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [
+            JSON.stringify({ error: "Firma inválida", xSignature, xRequestId, manifest }, null, 2),
+          ]);
+          return res.sendStatus(401);
+        }
+
+        console.log("✅ Firma de webhook validada correctamente");
+      } else if (!webhookSecret) {
+        console.warn("⚠️ MP_WEBHOOK_SECRET no configurado. Saltando validación de firma.");
+      }
+
       await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [JSON.stringify(req.body, null, 2)])
 
       // Validar que sea una notificación de pago
