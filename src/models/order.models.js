@@ -5,7 +5,16 @@ export class OrderModel {
 
   async getAllOrders() {
     try {
-      const orders = await this.db.query("SELECT * FROM orders;");
+      const orders = await this.db.query(`
+        SELECT o.*, 
+          u.name AS buyer_first_name, u.lastname AS buyer_last_name,
+          u.email AS buyer_email, u.phone AS buyer_phone,
+          u.address AS buyer_address, u.city AS buyer_city,
+          u.country AS buyer_country, u.postal_code AS buyer_postal_code
+        FROM orders o
+        LEFT JOIN users u ON o.user_id = u.user_id
+        ORDER BY o.created_at DESC;
+      `);
       return orders;
     } catch (error) {
       throw error;

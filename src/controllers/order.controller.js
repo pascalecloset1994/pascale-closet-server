@@ -11,7 +11,18 @@ export class OrderController {
       if (orders.length === 0) {
         return res.status(400).json({ message: "No hay órdenes" });
       }
-      res.status(200).json(orders);
+
+      const ordersWithItems = await Promise.all(
+        orders.map(async (order) => {
+          const items = await this.orderModel.getOrderDetails(order.id);
+          return {
+            ...order,
+            items: items.rows || items,
+          };
+        })
+      );
+
+      res.status(200).json(ordersWithItems);
     } catch (error) {
       res.status(500).json({ error: "Error al obtener las órdenes" });
     }

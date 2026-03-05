@@ -185,6 +185,34 @@ export class PaymentController {
                 const itemsResult = await this.orderModel.getOrderDetails(order_id);
                 const items = itemsResult?.rows || itemsResult;
 
+                // Descontar stock de cada producto
+                for (const item of items) {
+                  const productId = item.product_id;
+                  const quantity = item.quantity || 1;
+                  await this.db.query(
+                    "UPDATE products SET stock = stock - $1, updated_at = NOW() WHERE id = $2 AND stock >= $1;",
+                    [quantity, productId]
+                  );
+                }
+
+                // Guardar datos de envío del comprador en la orden
+                if (user) {
+                  await this.db.query(
+                    `UPDATE orders SET 
+                      buyer_name = $1, buyer_email = $2, buyer_phone = $3, 
+                      buyer_address = $4, buyer_city = $5, updated_at = NOW()
+                    WHERE id = $6;`,
+                    [
+                      `${user.name} ${user.lastname}`,
+                      user.email,
+                      user.phone || null,
+                      user.address || null,
+                      user.city || null,
+                      order_id,
+                    ]
+                  );
+                }
+
                 if (user) {
                   await sendOrderEmail({
                     to: user.email,
