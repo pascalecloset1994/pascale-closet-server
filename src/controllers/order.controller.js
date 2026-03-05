@@ -4,6 +4,7 @@ export class OrderController {
   constructor({ orderModel }) {
     this.orderModel = orderModel;
   }
+  getRows = (result) => result?.rows
 
   getAllOrders = async (req, res) => {
     try {
@@ -30,7 +31,9 @@ export class OrderController {
   getUserOrders = async (req, res) => {
     try {
       const { user_id } = req.params;
-      const orders = await this.orderModel.getUserOrders(user_id);
+      const ordersResult = await this.orderModel.getUserOrders(user_id);
+      const orders = this.getRows(ordersResult);
+
       if (orders.length === 0) {
         return res
           .status(400)
