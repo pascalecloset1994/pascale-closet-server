@@ -14,7 +14,7 @@ export class PaymentController {
 
   createPreference = async (req, res) => {
     try {
-      const { user_id, items, total } = req.body;
+      const { user_id, items, total, shipping } = req.body;
 
       // Primero creamos la orden en nuestra DB
       const order = await this.orderModel.createOrder({
@@ -22,6 +22,7 @@ export class PaymentController {
         total,
         items,
         payment_id: null,
+        shipping: shipping || null,
       });
 
       const body = {
@@ -195,42 +196,32 @@ export class PaymentController {
                   );
                 }
 
-                // Guardar datos de envío del comprador en la orden
-                if (user) {
-                  await this.db.query(
-                    `UPDATE orders SET 
-                      buyer_name = $1, buyer_email = $2, buyer_phone = $3, 
-                      buyer_address = $4, buyer_city = $5, updated_at = NOW()
-                    WHERE id = $6;`,
-                    [
-                      `${user.name} ${user.lastname}`,
-                      user.email,
-                      user.phone || null,
-                      user.address || null,
-                      user.city || null,
-                      order_id,
-                    ]
-                  );
-                }
+                // Los datos de envío ya están en la orden (guardados al crear desde el checkout)
+                // Usamos user solo como fallback para email/nombre si la orden no tiene buyer_*
+                const buyerName = order.buyer_name || (user ? `${user.name} ${user.lastname}` : null);
+                const buyerEmail = order.buyer_email || user?.email;
+                const buyerPhone = order.buyer_phone || user?.phone || null;
+                const buyerAddress = order.buyer_address || user?.address || null;
+                const buyerCity = order.buyer_city || user?.city || null;
 
-                if (user) {
+                if (buyerEmail) {
                   await sendOrderEmail({
-                    to: user.email,
-                    userName: `${user.name} ${user.lastname}`,
+                    to: buyerEmail,
+                    userName: buyerName,
                     orderId: order_id,
                     items: items,
                     total: order.total,
                     orderDate: new Date().toLocaleDateString("es-CL"),
-                    address: user.address,
-                    city: user.city
+                    address: buyerAddress,
+                    city: buyerCity
                   });
-                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + user.email)]);
+                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + buyerEmail)]);
 
                   // Notificar al vendedor
                   await sendSellerOrderEmail({
-                    buyerName: `${user.name} ${user.lastname}`,
-                    buyerEmail: user.email,
-                    buyerPhone: user.phone || null,
+                    buyerName,
+                    buyerEmail,
+                    buyerPhone,
                     orderId: order_id,
                     orderNumber: order.order_number || null,
                     items,
@@ -238,10 +229,10 @@ export class PaymentController {
                     orderDate: new Date().toLocaleDateString("es-CL"),
                     paymentMethod: paymentData.payment_method_id,
                     paymentId: String(paymentData.id),
-                    address: user.address || null,
-                    city: user.city || null,
+                    address: buyerAddress,
+                    city: buyerCity,
                   });
-                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor" + user.email)]);
+                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor")]);
                 }
               }
             } catch (emailError) {

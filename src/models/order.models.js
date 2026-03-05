@@ -68,13 +68,13 @@ export class OrderModel {
     }
   }
 
-  async createOrder({ user_id, total, items, payment_id }) {
+  async createOrder({ user_id, total, items, payment_id, shipping }) {
     try {
       await this.db.query("BEGIN");
 
       const insertOrder = `
-          INSERT INTO orders (user_id, total, payment_id, order_number)
-          VALUES ($1, $2, $3, $4)
+          INSERT INTO orders (user_id, total, payment_id, order_number, buyer_name, buyer_email, buyer_phone, buyer_address, buyer_city)
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING id;
         `;
       const result = await this.db.query(insertOrder, [
@@ -82,6 +82,11 @@ export class OrderModel {
         total,
         payment_id,
         this.generateOrderNumber(),
+        shipping ? `${shipping.firstName} ${shipping.lastName}` : null,
+        shipping?.email || null,
+        shipping?.phone || null,
+        shipping?.address ? `${shipping.address}, ${shipping.state || ''} ${shipping.zipCode || ''}`.trim() : null,
+        shipping?.city || null,
       ]);
 
       const row = result?.rows?.[0] || result?.[0];
