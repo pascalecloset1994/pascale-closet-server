@@ -45,7 +45,7 @@ export class OrderController {
           const items = await this.orderModel.getOrderDetails(order.id);
           return {
             ...order,
-            items,
+            items: items.rows,
           };
         })
       );
