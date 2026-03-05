@@ -48,7 +48,7 @@ export class OrderModel {
         oi.quantity,
         oi.price
         FROM order_items oi
-        JOIN e_retro_products p ON oi.product_id = p.id
+        JOIN products p ON oi.product_id = p.id
         WHERE oi.order_id = $1;
         `,
         [order_id],
