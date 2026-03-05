@@ -3,6 +3,7 @@ import { Preference, Payment } from "mercadopago";
 import { mpClient } from "../services/mercadoPago.service.js";
 import { sendOrderEmail, sendSellerOrderEmail } from "../services/mail.service.js";
 import { GET_USER_BY_ID } from "./constants.js";
+import { neonDB } from "../config/dbConfig.js";
 
 export class PaymentController {
   constructor({ orderModel, paymentModel, db }) {
@@ -195,7 +196,7 @@ export class PaymentController {
                     address: user.address,
                     city: user.city
                   });
-                  console.log("📧 Email de confirmación enviado a:", user.email);
+                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + user.email)]);
 
                   // Notificar al vendedor
                   await sendSellerOrderEmail({
@@ -212,7 +213,7 @@ export class PaymentController {
                     address: user.address || null,
                     city: user.city || null,
                   });
-                  console.log("📧 Email de nueva venta enviado al vendedor");
+                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor" + user.email)]);
                 }
               }
             } catch (emailError) {

@@ -1,5 +1,3 @@
-import { neonDB } from "../config/dbConfig.js";
-
 export class OrderController {
   constructor({ orderModel }) {
     this.orderModel = orderModel;
@@ -8,7 +6,8 @@ export class OrderController {
 
   getAllOrders = async (req, res) => {
     try {
-      const orders = await this.orderModel.getAllOrders();
+      const ordersResult = await this.orderModel.getAllOrders();
+      const orders = this.getRows(ordersResult);
       if (orders.length === 0) {
         return res.status(400).json({ message: "No hay órdenes" });
       }
@@ -39,7 +38,7 @@ export class OrderController {
           .status(400)
           .json({ message: "Este usuario no ha generado órdenes aún" });
       }
-      neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify(orders, null, 2)]);
+
       const ordersWithItems = await Promise.all(
         orders.map(async (order) => {
           const items = await this.orderModel.getOrderDetails(order.id);
