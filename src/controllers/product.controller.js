@@ -6,7 +6,7 @@ import {
   GET_PRODUCT_BY_ID,
   UPDATE_PRODUCT,
 } from "./constants.js";
-import { updateToBlob } from "../services/vercelBlob.service.js";
+import { updateToBlob, deleteFromBlob } from "../services/vercelBlob.service.js";
 
 export class ProductController {
   constructor({ db }) {
@@ -166,8 +166,30 @@ export class ProductController {
   deleteProduct = async (req, res) => {
     const { id } = req.params;
     try {
+      // Obtener el producto para acceder a sus imágenes
+      const productResult = await this.db.query(GET_PRODUCT_BY_ID, [id]);
+      const product = this.getFirstRow(productResult);
+
+      if (!product)
+        return res.status(404).json({ message: "Producto no encontrado" });
+
+      // Eliminar imágenes del blob storage si existen
+      if (product.image) {
+        try {
+          const imageUrls = JSON.parse(product.image);
+          await Promise.all(
+            imageUrls.map(url => deleteFromBlob(url))
+          );
+        } catch (parseError) {
+          console.error("Error al parsear imágenes:", parseError);
+          // Continuar con la eliminación del producto aunque falle la limpieza de imágenes
+        }
+      }
+
+      // Eliminar producto de la base de datos
       const result = await this.db.query(DELETE_PRODUCT, [id]);
       const deletedProduct = this.getFirstRow(result);
+
       if (!deletedProduct)
         return res.status(404).json({ message: "Producto no encontrado" });
 

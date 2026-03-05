@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 import sharp from "sharp";
 
 export const updateToBlob = async (file) => {
@@ -22,4 +22,14 @@ export const updateToBlob = async (file) => {
     access: "public",
   });
   return blob.url;
+};
+
+export const deleteFromBlob = async (imageUrl) => {
+  try {
+    await del(imageUrl);
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar imagen de Blob:", error);
+    return false;
+  }
 };
