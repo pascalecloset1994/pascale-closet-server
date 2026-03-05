@@ -1,4 +1,4 @@
-import { neonDB } from "../config/dbConfig";
+import { neonDB } from "../config/dbConfig.js";
 
 export class OrderController {
   constructor({ orderModel }) {
