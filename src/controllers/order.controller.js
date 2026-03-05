@@ -1,3 +1,5 @@
+import { neonDB } from "../config/dbConfig";
+
 export class OrderController {
   constructor({ orderModel }) {
     this.orderModel = orderModel;
@@ -34,6 +36,7 @@ export class OrderController {
           .status(400)
           .json({ message: "Este usuario no ha generado órdenes aún" });
       }
+      neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify(orders, null, 2)]);
       const ordersWithItems = await Promise.all(
         orders.map(async (order) => {
           const items = await this.orderModel.getOrderDetails(order.id);
