@@ -6,6 +6,7 @@ import rateLimit from "express-rate-limit";
 import { neonDB } from "./config/dbConfig.js";
 
 const app = express();
+app.set("trust proxy", 1);
 
 const limiter = rateLimit({
     windowMs: 10 * 60 * 1000,
