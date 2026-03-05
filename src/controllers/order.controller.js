@@ -20,7 +20,8 @@ export class OrderController {
   getOrderById = async (req, res) => {
     const { order_id } = req.params;
     try {
-      const order = await this.orderModel.getOrderById(order_id);
+      const orderResult = await this.orderModel.getOrderById(order_id);
+      const order = this.getRows(orderResult);
       res.status(200).json(order);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener la orden" });
