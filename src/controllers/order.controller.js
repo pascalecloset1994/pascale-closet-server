@@ -2,7 +2,7 @@ export class OrderController {
   constructor({ orderModel }) {
     this.orderModel = orderModel;
   }
-  getRows = (result) => result?.rows
+  getRows = (result) => result?.rows || result?.[0]
 
   getAllOrders = async (req, res) => {
     try {
