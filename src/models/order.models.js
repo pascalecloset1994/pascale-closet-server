@@ -6,11 +6,24 @@ export class OrderModel {
   async getAllOrders() {
     try {
       const orders = await this.db.query(`
-        SELECT o.*, 
-          u.name AS buyer_first_name, u.lastname AS buyer_last_name,
-          u.email AS buyer_email, u.phone AS buyer_phone,
-          u.address AS buyer_address, u.city AS buyer_city,
-          u.country AS buyer_country, u.postal_code AS buyer_postal_code
+        SELECT 
+          o.id,
+          o.user_id,
+          o.total,
+          o.status,
+          o.payment_id,
+          o.order_number,
+          o.created_at,
+          o.updated_at,
+          COALESCE(o.buyer_name, CONCAT(u.name, ' ', u.lastname)) AS buyer_name,
+          COALESCE(o.buyer_email, u.email) AS buyer_email,
+          COALESCE(o.buyer_phone, u.phone) AS buyer_phone,
+          COALESCE(o.buyer_address, u.address) AS buyer_address,
+          COALESCE(o.buyer_city, u.city) AS buyer_city,
+          COALESCE(u.country) AS buyer_country,
+          COALESCE(u.postal_code) AS buyer_postal_code,
+          u.name AS buyer_first_name,
+          u.lastname AS buyer_last_name
         FROM orders o
         LEFT JOIN users u ON o.user_id = u.user_id
         ORDER BY o.created_at DESC;
