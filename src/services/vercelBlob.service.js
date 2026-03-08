@@ -9,8 +9,8 @@ export const updateToBlob = async (file) => {
   const blob = await put(
     `products/${Date.now()}.${ext}`,
     file.buffer,
-    { access: "public" }
-  );
+    { access: "public", allowOverwrite: true }
+  )
   return blob.url;
 };
 
