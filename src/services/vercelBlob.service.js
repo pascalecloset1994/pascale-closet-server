@@ -1,4 +1,5 @@
 import { put, del } from "@vercel/blob";
+import sharp from "sharp"
 
 export const updateToBlob = async (file) => {
   // Obtener extensión del archivo original
@@ -6,9 +7,11 @@ export const updateToBlob = async (file) => {
     ? file.originalname.split(".").pop().toLowerCase()
     : "jpg";
 
+  const optimizedBuffer = await sharp(file.buffer).rotate().toBuffer()
+
   const blob = await put(
     `products/${Date.now()}.${ext}`,
-    file.buffer,
+    optimizedBuffer,
     { access: "public", allowOverwrite: true }
   )
   return blob.url;

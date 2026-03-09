@@ -38,7 +38,7 @@ export class AuthController {
       const { email, password } = req.body;
 
       if (!email || !password)
-        return res.status(400).json({ message: "Campos vacíos" });
+        return res.status(400).json({ message: "Campos vacíos." });
 
       const userExist = await this.db.query(GET_USER_BY_EMAIL, [email]);
       const user = this.getFirstRow(userExist);
@@ -46,7 +46,7 @@ export class AuthController {
       if (!user)
         return res
           .status(404)
-          .json({ message: "El correo electrónico no está registrado", email });
+          .json({ message: "Credenciales incorrectas." });
 
       const validated = await compare(password, user.password);
       if (!validated)

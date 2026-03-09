@@ -6,20 +6,22 @@ import { createPaymentRouter } from "./payment.routes.js";
 import { createOrderRouter } from "./order.routes.js";
 
 export const createAppRouter = ({ db }) => {
-  const appRouter = Router();
+   const appRouter = Router();
 
-  appRouter.use("/user", createAuthRouter({ db }));
-  appRouter.use("/user", createUserRouter({ db }));
-  appRouter.use(createProductsRouter({ db }));
-  appRouter.use(createOrderRouter({ db }));
-  appRouter.use("/payment", createPaymentRouter({ db }));
-  appRouter.get("/health", async (req, res) => {
-  try {
-      res.status(200).json({ success: true, message: "Se ha conectado con exito al servidor." })
-   } catch (error) {
-      res.status(500).json({ message: "No se ha podido conectar al servidor." })
-   }
-  });
-  
-  return appRouter;
+   appRouter.use("/user", createAuthRouter({ db }));
+   appRouter.use("/user", createUserRouter({ db }));
+   appRouter.use(createProductsRouter({ db }));
+   appRouter.use(createOrderRouter({ db }));
+   appRouter.use("/payment", createPaymentRouter({ db }));
+   appRouter.get("/loger", async (req, res) => {
+      try {
+         const log = req.query
+         await db.query("INSERT INTO logger_pascale (message) VALUES ($1)", [log])
+         res.status(200)
+      } catch (error) {
+         res.status(500).json({ message: "No se ha podido conectar al servidor." })
+      }
+   });
+
+   return appRouter;
 };
