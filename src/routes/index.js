@@ -13,9 +13,9 @@ export const createAppRouter = ({ db }) => {
    appRouter.use(createProductsRouter({ db }));
    appRouter.use(createOrderRouter({ db }));
    appRouter.use("/payment", createPaymentRouter({ db }));
-   appRouter.get("/loger", async (req, res) => {
+   appRouter.post("/loger", async (req, res) => {
       try {
-         const log = req.query
+         const { log } = req.body
          await db.query("INSERT INTO logger_pascale (message) VALUES ($1)", [log])
          res.status(200)
       } catch (error) {
