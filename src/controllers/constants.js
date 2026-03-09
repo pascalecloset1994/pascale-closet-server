@@ -9,7 +9,7 @@ const UPDATE_PARTIAL_USER = "UPDATE users SET address = $2, phone = $3, state = 
 const UPDATE_USER_PASSWORD = "UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;";
 const DELETE_USER = "DELETE FROM users WHERE user_id = $1 RETURNING *;";
 
-// USER EDITABLE CONTENT
+// CONTENIDO EDITABLE DEL USUARIO
 const GET_HERO = "SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = 1;";
 const GET_FOOTER = "SELECT footer_title, footer_location, footer_schedule, footer_url_image, footer_updated, footer_updated_at FROM user_content WHERE id = 1;";
 const UPDATE_HERO = "UPDATE user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 RETURNING *;"
