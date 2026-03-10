@@ -2,6 +2,7 @@ import { Router } from "express";
 import { PaymentController } from "../controllers/payment.controller.js";
 import { OrderModel } from "../models/order.models.js";
 import { PaymentModel } from "../models/payment.models.js";
+import { isAuth } from "../middlewares/isAuth.js";
 
 export const createPaymentRouter = ({ db }) => {
   const paymentRouter = Router();
@@ -9,7 +10,7 @@ export const createPaymentRouter = ({ db }) => {
   const paymentModel = new PaymentModel(db);
   const paymentController = new PaymentController({ orderModel, paymentModel, db });
 
-  paymentRouter.post("/create", paymentController.createPreference);
+  paymentRouter.post("/create", isAuth, paymentController.createPreference);
   paymentRouter.post("/webhook", paymentController.webhook);
 
   return paymentRouter;

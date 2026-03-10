@@ -4,6 +4,7 @@ import { mpClient } from "../services/mercadoPago.service.js";
 import { sendOrderEmail, sendSellerOrderEmail } from "../services/mail.service.js";
 import { GET_USER_BY_ID } from "./constants.js";
 import { neonDB } from "../config/dbConfig.js";
+import { request, response } from "express";
 
 export class PaymentController {
   constructor({ orderModel, paymentModel, db }) {
@@ -12,13 +13,14 @@ export class PaymentController {
     this.db = db;
   }
 
-  createPreference = async (req, res) => {
+  createPreference = async (req = request, res = response) => {
     try {
-      const { user_id, items, total, shipping } = req.body;
+      const userId = req.userId
+      const { items, total, shipping } = req.body;
 
       // Primero creamos la orden en nuestra DB
       const order = await this.orderModel.createOrder({
-        user_id,
+        user_id: userId,
         total,
         items,
         payment_id: null,
