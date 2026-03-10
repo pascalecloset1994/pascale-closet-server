@@ -217,7 +217,7 @@ export class PaymentController {
                     address: buyerAddress,
                     city: buyerCity
                   });
-                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + buyerEmail)]);
+                  await neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + buyerEmail)]);
 
                   // Notificar al vendedor
                   await sendSellerOrderEmail({
@@ -234,7 +234,7 @@ export class PaymentController {
                     address: buyerAddress,
                     city: buyerCity,
                   });
-                  neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor")]);
+                  await neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor")]);
                 }
               }
             } catch (emailError) {

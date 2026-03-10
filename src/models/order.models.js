@@ -49,7 +49,7 @@ export class OrderModel {
   async getOrderById(order_id) {
     try {
       const order = await this.db.query(
-        "SELECT * FROM orders WHERE order_id = $1 ORDER BY created_at ASC;",
+        "SELECT * FROM orders WHERE id = $1;",
         [order_id],
       );
       return order;
