@@ -6,7 +6,7 @@ import {
   GET_PRODUCT_BY_ID,
   UPDATE_PRODUCT,
 } from "./constants.js";
-import { updateToBlob, deleteFromBlob } from "../services/vercelBlob.service.js";
+import { deleteFromBlob } from "../services/vercelBlob.service.js";
 
 export class ProductController {
   constructor({ db }) {
@@ -63,13 +63,13 @@ export class ProductController {
   };
 
   createProduct = async (req, res) => {
-    const files = req.files || [];
     const {
       name,
       price,
       stock,
       condition,
       description,
+      imageUrls,
       brand,
       temp,
       size,
@@ -79,16 +79,15 @@ export class ProductController {
     } = req.body;
 
     try {
-      const imageUrls = await Promise.all(
-        files.map(file => updateToBlob(file))
-      );
+      // Serializar el array de URLs como JSON para la columna `image`
+      const imageJson = Array.isArray(imageUrls) ? JSON.stringify(imageUrls) : (imageUrls ?? null);
 
       const result = await this.db.query(CREATE_PRODUCT, [
         name,
         price,
         stock,
         condition,
-        JSON.stringify(imageUrls),
+        imageJson,
         description,
         brand,
         temp,
@@ -111,29 +110,19 @@ export class ProductController {
 
   updateProduct = async (req, res) => {
     const { id } = req.params;
-    const files = req.files || [];
-    const { name, description, category, price, stock, condition, brand, temp, size, color, existing_images } = req.body;
+    // El frontend envía application/json con imageUrls: string[] (ya subidas a Vercel Blob)
+    const { name, description, category, price, stock, condition, brand, temp, size, color, imageUrls } = req.body;
 
     try {
-      let imageJson = null;
+      let imageJson;
 
-      // Process new uploaded files
-      const newImageUrls = files.length > 0
-        ? await Promise.all(files.map(file => updateToBlob(file)))
-        : [];
-
-      // Parse existing image URLs sent from the frontend
-      const existingUrls = existing_images ? JSON.parse(existing_images) : [];
-
-      // Combine existing + new images
-      const allImages = [...existingUrls, ...newImageUrls];
-
-      if (allImages.length > 0) {
-        imageJson = JSON.stringify(allImages);
+      if (Array.isArray(imageUrls) && imageUrls.length > 0) {
+        // URLs llegaron del frontend (nuevas + existentes combinadas)
+        imageJson = JSON.stringify(imageUrls);
       } else {
-        // No new files and no existing images sent — keep current images in DB
+        // No se enviaron URLs → conservar las imágenes actuales de la BD
         const currentProduct = this.getFirstRow(await this.db.query(GET_PRODUCT_BY_ID, [id]));
-        imageJson = currentProduct?.image || null;
+        imageJson = currentProduct?.image ?? null;
       }
 
       const result = await this.db.query(UPDATE_PRODUCT, [
