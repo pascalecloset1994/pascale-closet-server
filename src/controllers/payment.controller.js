@@ -42,7 +42,7 @@ export class PaymentController {
         auto_return: "approved",
         metadata: {
           order_id: order.order_id,
-          user_id: user_id
+          user_id: userId
         },
         // Importante: agregar notification_url para recibir webhooks
         // El parámetro source_news=webhooks asegura que solo recibas webhooks, no IPN
