@@ -83,15 +83,6 @@ export class AuthController {
       if (!name || !lastName || !email || !password)
         return res.status(400).json({ message: "Campos vacíos" });
 
-      const userExist = await this.db.query(GET_USER_BY_EMAIL, [email]);
-      const userFound = this.getFirstRow(userExist);
-
-      if (userFound) {
-        return res
-          .status(409)
-          .json({ message: `El correo ${email} ya está registrado.` });
-      }
-
       const hashedPassword = await hash(password, 10);
 
       const result = await this.db.query(CREATE_USER, [
@@ -107,6 +98,13 @@ export class AuthController {
       ]);
 
       const newUser = this.getFirstRow(result);
+
+      if (!newUser) {
+        return res
+          .status(409)
+          .json({ message: "Credenciales incorrectas." });
+      }
+
       const token = await createAccessToken({ id: newUser.user_id });
 
       res.cookie("pascale_token", token, {
@@ -119,6 +117,12 @@ export class AuthController {
         message: `Registro exitoso! Se ha enviado un correo a ${email}. No olvides revisar tu bandeja de entrada y, si no lo ves 👀, échale un vistazo a la carpeta de SPAM.`,
       });
     } catch (error) {
+      if (error?.code === "23505") {
+        return res
+          .status(409)
+          .json({ message: `El correo ${req.body?.email} ya está registrado.` });
+      }
+
       return res
         .status(500)
         .json({ message: "Error al crear usuario: " + error.message });

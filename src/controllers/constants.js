@@ -3,7 +3,9 @@ const GET_ALL_USERS = "SELECT * FROM users;";
 const GET_USER_BY_ID = "SELECT * FROM users WHERE user_id = $1;";
 const GET_USER_BY_EMAIL = "SELECT * FROM users WHERE email = $1;";
 const CREATE_USER = `INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;`;
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+ON CONFLICT (email) DO NOTHING
+RETURNING *;`;
 const UPDATE_USER = "UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = $6, avatar = $7, city = $8, country = $9, postal_code = $10 WHERE user_id = $1 RETURNING *;";
 const UPDATE_PARTIAL_USER = "UPDATE users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = $6 WHERE user_id = $1 RETURNING *;";
 const UPDATE_USER_PASSWORD = "UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;";
