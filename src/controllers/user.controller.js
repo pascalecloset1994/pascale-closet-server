@@ -9,6 +9,10 @@ import {
   UPDATE_PARTIAL_USER,
   UPDATE_FOOTER,
   GET_FOOTER,
+  GET_HERO_VERSION_BY_ID,
+  GET_FOOTER_VERSION_BY_ID,
+  GET_DISCOUNT_VERSION,
+  UPDATE_DISCOUNT_CONTENT,
 } from "./constants.js";
 
 export class UserController {
@@ -69,14 +73,21 @@ export class UserController {
         lastname,
         email,
         true,
-        new Date().toISOString(),
         urlImage,
         city,
         country,
         postalCode,
+        user.updated_at,
       ]);
 
       const updatedUser = this.getFirstRow(updated);
+
+      if (!updatedUser) {
+        return res.status(409).json({
+          message:
+            "Conflicto de concurrencia: el perfil fue actualizado por otra sesión. Recarga e intenta nuevamente.",
+        });
+      }
 
       return res
         .status(200)
@@ -157,20 +168,29 @@ export class UserController {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
 
-      await this.db.query(UPDATE_PARTIAL_USER, [
+      const updated = await this.db.query(UPDATE_PARTIAL_USER, [
         id,
         address,
         phone,
         state,
         true,
-        new Date().toISOString(),
+        user.updated_at,
       ]);
+
+      const updatedUser = this.getFirstRow(updated);
+
+      if (!updatedUser) {
+        return res.status(409).json({
+          message:
+            "Conflicto de concurrencia: la información de envío fue actualizada por otra sesión. Recarga e intenta nuevamente.",
+        });
+      }
 
       return res.status(200).json({ message: "Usuario actualizado" });
     } catch (error) {
       return res
         .status(500)
-        .josn({ message: "Error al actualizar: " + error.message });
+        .json({ message: "Error al actualizar: " + error.message });
     }
   };
 
@@ -187,6 +207,13 @@ export class UserController {
       }
 
       const imageUrl = file ? await updateToBlob(file) : null;
+      const versionResult = await this.db.query(GET_HERO_VERSION_BY_ID, [id]);
+      const currentHero = this.getFirstRow(versionResult);
+
+      if (!currentHero) {
+        return res.status(404).json({ message: "Contenido Hero no encontrado." });
+      }
+
       const result = await this.db.query(UPDATE_HERO, [
         id,
         heroCollection,
@@ -194,8 +221,16 @@ export class UserController {
         heroSubTitle,
         true,
         imageUrl,
+        currentHero.hero_updated_at,
       ]);
       const hero = this.getFirstRow(result);
+
+      if (!hero) {
+        return res.status(409).json({
+          message:
+            "Conflicto de concurrencia: el Hero fue actualizado por otra sesión. Recarga e intenta nuevamente.",
+        });
+      }
 
       return res
         .status(200)
@@ -233,6 +268,15 @@ export class UserController {
       }
 
       const imageUrl = file ? await updateToBlob(file) : null;
+      const versionResult = await this.db.query(GET_FOOTER_VERSION_BY_ID, [id]);
+      const currentFooter = this.getFirstRow(versionResult);
+
+      if (!currentFooter) {
+        return res
+          .status(404)
+          .json({ message: "Contenido Footer no encontrado." });
+      }
+
       const result = await this.db.query(UPDATE_FOOTER, [
         id,
         title,
@@ -240,8 +284,16 @@ export class UserController {
         schedule,
         true,
         imageUrl,
+        currentFooter.updated_at,
       ]);
       const hero = this.getFirstRow(result);
+
+      if (!hero) {
+        return res.status(409).json({
+          message:
+            "Conflicto de concurrencia: el Footer fue actualizado por otra sesión. Recarga e intenta nuevamente.",
+        });
+      }
 
       return res
         .status(200)
@@ -272,27 +324,32 @@ export class UserController {
       discount,
       discountIsActive: discount_is_active,
       discountDescription: discount_description,
-      discountUpdatedAt: discount_updated_at,
     } = req.body;
 
     try {
-      const result = await this.db.query(
-        `UPDATE user_content
-         SET
-          discount_is_active = $1,
-          discount = $2,
-          discount_description = $3,
-          discount_updated_at = $4
-         WHERE id = 1
-         RETURNING *;`,
-        [
-          discount_is_active,
-          discount,
-          discount_description,
-          discount_updated_at,
-        ],
-      );
+      const versionResult = await this.db.query(GET_DISCOUNT_VERSION);
+      const currentDiscount = this.getFirstRow(versionResult);
+
+      if (!currentDiscount) {
+        return res
+          .status(404)
+          .json({ message: "Contenido de descuento no encontrado." });
+      }
+
+      const result = await this.db.query(UPDATE_DISCOUNT_CONTENT, [
+        discount_is_active,
+        discount,
+        discount_description,
+        currentDiscount.discount_updated_at,
+      ]);
       const userContent = this.getFirstRow(result);
+
+      if (!userContent) {
+        return res.status(409).json({
+          message:
+            "Conflicto de concurrencia: el contenido de descuentos fue actualizado por otra sesión. Recarga e intenta nuevamente.",
+        });
+      }
 
       return res
         .status(200)

@@ -6,16 +6,28 @@ const CREATE_USER = `INSERT INTO users (name, lastname, email, password, role, i
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 ON CONFLICT (email) DO NOTHING
 RETURNING *;`;
-const UPDATE_USER = "UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = $6, avatar = $7, city = $8, country = $9, postal_code = $10 WHERE user_id = $1 RETURNING *;";
-const UPDATE_PARTIAL_USER = "UPDATE users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = $6 WHERE user_id = $1 RETURNING *;";
+const UPDATE_USER = "UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = NOW(), avatar = $6, city = $7, country = $8, postal_code = $9 WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $10 RETURNING *;";
+const UPDATE_PARTIAL_USER = "UPDATE users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = NOW() WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $6 RETURNING *;";
 const UPDATE_USER_PASSWORD = "UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;";
 const DELETE_USER = "DELETE FROM users WHERE user_id = $1 RETURNING *;";
 
 // CONTENIDO EDITABLE DEL USUARIO
 const GET_HERO = "SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = 1;";
 const GET_FOOTER = "SELECT footer_title, footer_location, footer_schedule, footer_url_image, footer_updated, footer_updated_at FROM user_content WHERE id = 1;";
-const UPDATE_HERO = "UPDATE user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 RETURNING *;"
-const UPDATE_FOOTER = "UPDATE user_content SET updated_at = NOW(), title = $2, location = $3, schedule = $4, updated = $5, url_image = $6 WHERE ID = $1 RETURNING *;"
+const GET_HERO_VERSION_BY_ID = "SELECT hero_updated_at FROM user_content WHERE id = $1;";
+const GET_FOOTER_VERSION_BY_ID = "SELECT updated_at FROM user_content WHERE id = $1;";
+const GET_DISCOUNT_VERSION = "SELECT discount_updated_at FROM user_content WHERE id = 1;";
+const UPDATE_HERO = "UPDATE user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 AND hero_updated_at IS NOT DISTINCT FROM $7 RETURNING *;";
+const UPDATE_FOOTER = "UPDATE user_content SET updated_at = NOW(), title = $2, location = $3, schedule = $4, updated = $5, url_image = $6 WHERE ID = $1 AND updated_at IS NOT DISTINCT FROM $7 RETURNING *;";
+const UPDATE_DISCOUNT_CONTENT = `UPDATE user_content
+SET
+  discount_is_active = $1,
+  discount = $2,
+  discount_description = $3,
+  discount_updated_at = NOW()
+WHERE id = 1
+  AND discount_updated_at IS NOT DISTINCT FROM $4
+RETURNING *;`;
 
 // PRODUCTOS
 const GET_ALL_PRODUCTS = "SELECT * FROM products;"
@@ -39,6 +51,10 @@ export {
   UPDATE_HERO,
   GET_FOOTER,
   UPDATE_FOOTER,
+  GET_HERO_VERSION_BY_ID,
+  GET_FOOTER_VERSION_BY_ID,
+  GET_DISCOUNT_VERSION,
+  UPDATE_DISCOUNT_CONTENT,
   GET_ALL_PRODUCTS,
   GET_ALL_PRODUCTS_BY_USER_ID,
   GET_PRODUCT_BY_ID,
