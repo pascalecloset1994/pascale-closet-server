@@ -33,23 +33,40 @@ Servidor backend para la tienda "Pascale Clothes" — API REST construida con `E
 - **Autenticación**:
 	- **POST** `/api/user/signup` : registro.
 	- **POST** `/api/user/login` : login.
-	- **GET** `/api/user/logout` : logout (requiere auth).
+	- **POST** `/api/user/logout` : logout.
 	- **POST** `/api/user/recovery-password` : solicita email de recuperación.
 	- **POST** `/api/user/reset-password` : restablece contraseña (usa cookie de reset).
-- **Usuario** (profile / configuración): `/api/user/*` (ver `src/routes/user.routes.js`).
+- **Usuario**:
+	- **GET** `/api/user/profile` : perfil del usuario autenticado (auth requerida).
+	- **GET** `/api/user/id` : obtiene usuario por `req.userId` (auth requerida).
+	- **PUT** `/api/user/update` : actualiza perfil + avatar (`multipart/form-data`, auth requerida).
+	- **PATCH** `/api/user/update` : actualiza datos de envío (auth requerida).
+	- **DELETE** `/api/user/delete` : elimina usuario (auth requerida).
+	- **GET** `/api/user/user_hero` : contenido hero público.
+	- **POST** `/api/user/user_hero/:id` : actualiza hero (`multipart/form-data`, auth requerida).
+	- **GET** `/api/user/user_footer` : contenido footer público.
+	- **POST** `/api/user/user_footer/:id` : actualiza footer (`multipart/form-data`, auth requerida).
+	- **GET** `/api/user/content` : contenido de descuentos público.
+	- **PATCH** `/api/user/content-update` : actualiza contenido de descuentos (auth requerida).
 - **Productos**:
 	- **GET** `/api/list-products` : listar todos los productos públicos.
 	- **GET** `/api/products` : listar productos del usuario (auth requerida).
-	- **GET** `/api/product/:id` : detalle de producto.
-	- **POST** `/api/product` : crear producto (soporta `multipart/form-data` imagen).
+	- **GET** `/api/product/:id` : detalle de producto (auth requerida).
+	- **POST** `/api/product` : crear producto (auth requerida).
 	- **PUT / DELETE** `/api/product/:id` : actualizar / eliminar (auth requerida).
-- **Órdenes** (seller y usuario): `GET /api/seller/orders`, `GET /api/user/orders/:user_id`, `POST /api/orders`, etc.
+- **Órdenes**:
+	- **GET** `/api/seller/orders` : listar órdenes para seller.
+	- **GET** `/api/user/orders/:user_id` : listar órdenes de un usuario.
+	- **GET** `/api/user/order/:order_id` : detalle básico de orden.
+	- **GET** `/api/orders/:order_id/details` : detalle completo de orden.
+	- **POST** `/api/orders` : crear orden.
+	- **PATCH** `/api/orders/:order_id/status` : actualizar estado de orden.
+	- **DELETE** `/api/order/:order_id` : eliminar orden.
 - **Pagos** (MercadoPago):
-	- **POST** `/api/payment/create` : crea preferencia y genera `init_point`.
+	- **POST** `/api/payment/create` : crea preferencia y genera `init_point` (auth requerida).
 	- **POST** `/api/payment/webhook` : webhook que procesa notificaciones de MercadoPago y actualiza órdenes en DB.
-- **Blog (Calbuco)**: rutas bajo `/api/calbuco_blog` para gestión y autenticación del blog.
-- **IA**:
-	- **GET** `/api/ai-assistant?message=...` : usa Cohere para generar respuesta basada en `src/config/cohereContent.js`.
+- **Logs**:
+	- **POST** `/api/loger` : registra mensajes en `logger_pascale`.
 
 **Variables de entorno (importantes)**
 - `NEON_DB_3`: cadena de conexión para Neon DB.

@@ -21,7 +21,7 @@ export const sendEmail = async ({ to, userName }) => {
 
     const html = emailTemplate({
       userName,
-      url: "https://pascale-clothes.vercel.app/products",
+      url: "https://pascaleclothes.com/products",
     });
 
     const info = await transporter.sendMail({
