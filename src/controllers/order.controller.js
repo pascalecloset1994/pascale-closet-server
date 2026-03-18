@@ -47,7 +47,7 @@ export class OrderController {
 
       if (orders.length === 0) {
         return res
-          .status(400)
+          .status(204)
           .json({ message: "Este usuario no ha generado órdenes aún" });
       }
 
