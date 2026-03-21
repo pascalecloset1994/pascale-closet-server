@@ -1,8 +1,9 @@
+import { UserModel } from "../models/user.models.js";
 import { updateToBlob } from "../services/vercelBlob.service.js";
 
 export class UserController {
   constructor({ model }) {
-    this.model = model;
+    this.model = new UserModel() || model;
   }
 
   getAllUsers = async (req, res) => {
@@ -272,10 +273,10 @@ export class UserController {
     }
   };
 
-  getUserDiscounContent = async (req, res) => {
+  getUserContent = async (req, res) => {
     try {
-      const discountData = await this.model.getUserDiscountContent();
-      return res.status(200).json({ userContent: discountData });
+      const userContent = await this.model.getUserContent();
+      return res.status(200).json({ userContent: userContent });
     } catch (error) {
       return res
         .status(500)
@@ -283,11 +284,12 @@ export class UserController {
     }
   };
 
-  updateUserDiscountContent = async (req, res) => {
+  updateUserContent = async (req, res) => {
     const {
       discount,
       discountIsActive: discount_is_active,
       discountDescription: discount_description,
+      shippingPrice: shipping_price,
     } = req.body;
 
     try {
@@ -299,11 +301,14 @@ export class UserController {
           .json({ message: "Contenido de descuento no encontrado." });
       }
 
-      const userContent = await this.model.updateUserDiscountContent({
+      const userContent = await this.model.updateUserContent({
         discountIsActive: discount_is_active,
         discount,
         discountDescription: discount_description,
         discountUpdatedAt: currentDiscount.discount_updated_at,
+        shippingPrice: shipping_price,
+        shippingUpdatedAt: shipping_price ? new Date() : null,
+        shippingUpdate: shipping_price ? true : false
       });
 
       if (!userContent) {

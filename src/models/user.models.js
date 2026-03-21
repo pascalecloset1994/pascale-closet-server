@@ -199,9 +199,18 @@ export class UserModel {
         }
     }
 
-    async getUserDiscountContent() {
+    async getUserContent() {
         try {
-            const result = await this.db.query("SELECT discount_is_active, discount, discount_description, discount_updated_at FROM user_content WHERE id = 1;");
+            const result = await this.db.query(`
+                SELECT discount_is_active, 
+                discount, 
+                discount_description, 
+                discount_updated_at, 
+                shipping_price, 
+                shipping_price_updated_at, 
+                shipping_price_update 
+                FROM user_content WHERE id = 1;
+                `);
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -217,7 +226,7 @@ export class UserModel {
         }
     }
 
-    async updateUserDiscountContent({ discountIsActive, discount, discountDescription, discountUpdatedAt }) {
+    async updateUserContent({ discountIsActive, discount, discountDescription, discountUpdatedAt, shippingPrice, shippingUpdatedAt, shippingUpdate }) {
         try {
             const result = await this.db.query(
                 `UPDATE user_content
@@ -225,7 +234,10 @@ export class UserModel {
                   discount_is_active = $1,
                   discount = $2,
                   discount_description = $3,
-                  discount_updated_at = NOW()
+                  discount_updated_at = NOW(),
+                  shipping_price = $4,
+                  shipping_price_updated_at = $5,
+                  shipping_price_update = $6
                 WHERE id = 1
                   AND discount_updated_at IS NOT DISTINCT FROM $4
                 RETURNING *;`,
@@ -234,6 +246,9 @@ export class UserModel {
                     discount,
                     discountDescription,
                     discountUpdatedAt,
+                    shippingPrice,
+                    shippingUpdatedAt,
+                    shippingUpdate
                 ]
             );
             return this.getFirstRow(result);

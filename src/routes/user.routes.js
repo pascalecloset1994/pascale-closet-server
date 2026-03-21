@@ -19,8 +19,8 @@ export const createUserRouter = ({ db }) => {
   userRouter.post("/user_hero/:id", isAuth, upload.single("heroUrlImage"), userController.updateUserClientHero);
   userRouter.post("/user_footer/:id", isAuth, upload.single("footerUrlImage"), userController.updateUserClientFooter);
   userRouter.patch("/update", isAuth, userController.updateUserShippingInformation);
-  userRouter.get("/content", userController.getUserDiscounContent);
-  userRouter.patch("/content-update", isAuth, userController.updateUserDiscountContent);
+  userRouter.get("/content", userController.getUserContent);
+  userRouter.patch("/content-update", isAuth, userController.updateUserContent);
 
   return userRouter;
 };
