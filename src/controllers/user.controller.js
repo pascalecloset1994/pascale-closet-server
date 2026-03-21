@@ -1,9 +1,8 @@
-import { UserModel } from "../models/user.models.js";
 import { updateToBlob } from "../services/vercelBlob.service.js";
 
 export class UserController {
   constructor({ model }) {
-    this.model = new UserModel() || model;
+    this.model = model;
   }
 
   getAllUsers = async (req, res) => {
