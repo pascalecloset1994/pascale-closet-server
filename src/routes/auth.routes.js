@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { AuthController } from "../controllers/auth.controller.js";
-import { isAuth } from "../middlewares/isAuth.js";
+import { AuthModel } from "../models/auth.model.js";
 
 export const createAuthRouter = ({ db }) => {
   const authRouter = Router();
-  const authController = new AuthController({ db });
+  const authModel = new AuthModel(db);
+  const authController = new AuthController({ model: authModel });
 
   authRouter.post("/signup", authController.signUp);
   authRouter.post("/login", authController.userLogin);

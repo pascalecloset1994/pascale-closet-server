@@ -1,32 +1,14 @@
 import { updateToBlob } from "../services/vercelBlob.service.js";
-import {
-  GET_ALL_USERS,
-  GET_USER_BY_ID,
-  UPDATE_USER,
-  DELETE_USER,
-  UPDATE_HERO,
-  GET_HERO,
-  UPDATE_PARTIAL_USER,
-  UPDATE_FOOTER,
-  GET_FOOTER,
-  GET_HERO_VERSION_BY_ID,
-  GET_FOOTER_VERSION_BY_ID,
-  GET_DISCOUNT_VERSION,
-  UPDATE_DISCOUNT_CONTENT,
-} from "./constants.js";
 
 export class UserController {
-  constructor({ db }) {
-    this.db = db;
+  constructor({ model }) {
+    this.model = model;
   }
-
-  getFirstRow = (result) => result?.rows?.[0] || result[0];
 
   getAllUsers = async (req, res) => {
     try {
-      const result = await this.db.query(GET_ALL_USERS);
-      const users = result?.rows || result;
-      return res.status(200).json({ users });
+      const users = await this.model.getAllUsers();
+      return res.status(200).json(users);
     } catch (error) {
       return res
         .status(500)
@@ -37,11 +19,11 @@ export class UserController {
   getUserById = async (req, res) => {
     try {
       const { userId: id } = req;
-      const result = await this.db.query(GET_USER_BY_ID, [id]);
-      const user = this.getFirstRow(result);
+      const user = await this.model.getUserById(id);
 
-      if (!user)
+      if (!user) {
         return res.status(404).json({ message: "Usuario inexistente", id });
+      }
 
       return res.status(200).json({ message: "Usuario encontrado", user });
     } catch (error) {
@@ -53,34 +35,32 @@ export class UserController {
 
   updateUser = async (req, res) => {
     try {
-      const id = req.userId;
+      const { userId } = req;
       const file = req.file ?? null;
       const { name, lastname, email, avatar, city, country, postalCode } =
         req.body;
 
       if (!name || !lastname || !email || !city || !postalCode)
-        return res.status(400).json({ message: "Campos vacíos" });
-      const result = await this.db.query(GET_USER_BY_ID, [id]);
+        return res.status(400).json({ message: "Campos vacíos." });
+      const user = await this.model.getUserById(userId);
 
-      const user = this.getFirstRow(result);
+      if (!user) {
+        return res.status(404).json({ message: "Usuario no encontrado." });
+      }
 
-      if (!user)
-        return res.status(404).json({ message: "Usuario no encontrado" });
       const urlImage = file ? await updateToBlob(file) : avatar;
-      const updated = await this.db.query(UPDATE_USER, [
-        id,
+      const updatedUser = await this.model.updateUser({
+        userId,
         name,
         lastname,
         email,
-        true,
-        urlImage,
+        updated: true,
+        avatar: urlImage,
         city,
         country,
         postalCode,
-        user.updated_at,
-      ]);
-
-      const updatedUser = this.getFirstRow(updated);
+        updatedAt: user.updated_at,
+      });
 
       if (!updatedUser) {
         return res.status(409).json({
@@ -101,9 +81,8 @@ export class UserController {
 
   deleteUser = async (req, res) => {
     try {
-      const id = req.userId;
-      const result = await this.db.query(DELETE_USER, [id]);
-      const deleted = this.getFirstRow(result);
+      const { userId } = req;
+      const deleted = await this.model.deleteUser(userId);
 
       if (!deleted) {
         return res.status(404).json({ message: "Usuario no encontrado" });
@@ -123,9 +102,7 @@ export class UserController {
   userProfile = async (req, res) => {
     try {
       const { userId } = req;
-
-      const result = await this.db.query(GET_USER_BY_ID, [userId]);
-      const user = this.getFirstRow(result);
+      const user = await this.model.getUserById(userId);
 
       if (!user)
         return res.status(404).json({ message: "Usuario inexistente" });
@@ -140,8 +117,7 @@ export class UserController {
 
   getUserClientHero = async (req, res) => {
     try {
-      const result = await this.db.query(GET_HERO);
-      const hero = this.getFirstRow(result);
+      const hero = await this.model.getUserHero();
 
       return res.status(200).json({ message: "Hero del usuario", hero });
     } catch (error) {
@@ -153,31 +129,27 @@ export class UserController {
 
   updateUserShippingInformation = async (req, res) => {
     try {
-      const id = req.userId;
+      const { userId } = req;
       const { address, phone, state } = req.body;
 
       if (!address || !phone || !state) {
         return res.status(400).json({ message: "Campos vacíos" });
       }
 
-      const result = await this.db.query(GET_USER_BY_ID, [id]);
-
-      const user = this.getFirstRow(result);
+      const user = await this.model.getUserById(userId);
 
       if (!user) {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
 
-      const updated = await this.db.query(UPDATE_PARTIAL_USER, [
-        id,
+      const updatedUser = await this.model.updatePartialUser({
+        userId,
         address,
         phone,
         state,
-        true,
-        user.updated_at,
-      ]);
-
-      const updatedUser = this.getFirstRow(updated);
+        updated: true,
+        updatedAt: user.updated_at,
+      });
 
       if (!updatedUser) {
         return res.status(409).json({
@@ -207,23 +179,21 @@ export class UserController {
       }
 
       const imageUrl = file ? await updateToBlob(file) : null;
-      const versionResult = await this.db.query(GET_HERO_VERSION_BY_ID, [id]);
-      const currentHero = this.getFirstRow(versionResult);
+      const currentHero = await this.model.getHeroVersionById(id);
 
       if (!currentHero) {
         return res.status(404).json({ message: "Contenido Hero no encontrado." });
       }
 
-      const result = await this.db.query(UPDATE_HERO, [
+      const hero = await this.model.updateUserHero({
         id,
         heroCollection,
         heroTitle,
         heroSubTitle,
-        true,
+        updated: true,
         imageUrl,
-        currentHero.hero_updated_at,
-      ]);
-      const hero = this.getFirstRow(result);
+        updatedAt: currentHero.hero_updated_at,
+      });
 
       if (!hero) {
         return res.status(409).json({
@@ -244,8 +214,7 @@ export class UserController {
 
   getUserClientFooter = async (req, res) => {
     try {
-      const result = await this.db.query(GET_FOOTER);
-      const footer = this.getFirstRow(result);
+      const footer = await this.model.getUserFooter();
 
       return res.status(200).json({ message: "Footer del usuario", footer });
     } catch (error) {
@@ -268,8 +237,7 @@ export class UserController {
       }
 
       const imageUrl = file ? await updateToBlob(file) : null;
-      const versionResult = await this.db.query(GET_FOOTER_VERSION_BY_ID, [id]);
-      const currentFooter = this.getFirstRow(versionResult);
+      const currentFooter = await this.model.getFooterVersionById(id);
 
       if (!currentFooter) {
         return res
@@ -277,18 +245,17 @@ export class UserController {
           .json({ message: "Contenido Footer no encontrado." });
       }
 
-      const result = await this.db.query(UPDATE_FOOTER, [
+      const footer = await this.model.updateUserFooter({
         id,
         title,
         location,
         schedule,
-        true,
+        updated: true,
         imageUrl,
-        currentFooter.updated_at,
-      ]);
-      const hero = this.getFirstRow(result);
+        updatedAt: currentFooter.updated_at,
+      });
 
-      if (!hero) {
+      if (!footer) {
         return res.status(409).json({
           message:
             "Conflicto de concurrencia: el Footer fue actualizado por otra sesión. Recarga e intenta nuevamente.",
@@ -297,7 +264,7 @@ export class UserController {
 
       return res
         .status(200)
-        .json({ message: "Footer actualizado con éxito", hero });
+        .json({ message: "Footer actualizado con éxito", footer });
     } catch (error) {
       return res
         .status(500)
@@ -307,10 +274,7 @@ export class UserController {
 
   getUserDiscounContent = async (req, res) => {
     try {
-      const result = await this.db.query(
-        "SELECT discount_is_active, discount, discount_description, discount_updated_at FROM user_content WHERE id = 1;",
-      );
-      const discountData = this.getFirstRow(result);
+      const discountData = await this.model.getUserDiscountContent();
       return res.status(200).json({ userContent: discountData });
     } catch (error) {
       return res
@@ -327,8 +291,7 @@ export class UserController {
     } = req.body;
 
     try {
-      const versionResult = await this.db.query(GET_DISCOUNT_VERSION);
-      const currentDiscount = this.getFirstRow(versionResult);
+      const currentDiscount = await this.model.getDiscountVersion();
 
       if (!currentDiscount) {
         return res
@@ -336,13 +299,12 @@ export class UserController {
           .json({ message: "Contenido de descuento no encontrado." });
       }
 
-      const result = await this.db.query(UPDATE_DISCOUNT_CONTENT, [
-        discount_is_active,
+      const userContent = await this.model.updateUserDiscountContent({
+        discountIsActive: discount_is_active,
         discount,
-        discount_description,
-        currentDiscount.discount_updated_at,
-      ]);
-      const userContent = this.getFirstRow(result);
+        discountDescription: discount_description,
+        discountUpdatedAt: currentDiscount.discount_updated_at,
+      });
 
       if (!userContent) {
         return res.status(409).json({
@@ -360,4 +322,14 @@ export class UserController {
         .json({ message: "Error al actualizar los datos " + error.message });
     }
   };
+
+  getShippingPrice = async (req, res) => {
+    try {
+      const shipping_price = await this.model.getShippingPrice();
+
+      return res.status(200).json(shipping_price);
+    } catch (error) {
+      return res.status(500).json({ message: "Error al obtener precio de envío." });
+    }
+  }
 }

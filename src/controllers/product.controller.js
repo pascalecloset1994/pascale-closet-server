@@ -1,24 +1,13 @@
-import {
-  CREATE_PRODUCT,
-  DELETE_PRODUCT,
-  GET_ALL_PRODUCTS,
-  GET_ALL_PRODUCTS_BY_USER_ID,
-  GET_PRODUCT_BY_ID,
-  UPDATE_PRODUCT,
-} from "./constants.js";
 import { deleteFromBlob } from "../services/vercelBlob.service.js";
 
 export class ProductController {
-  constructor({ db }) {
-    this.db = db;
+  constructor({ model }) {
+    this.model = model;
   }
-
-  getFirstRow = (result) => result?.rows?.[0] || result?.[0];
 
   listAllProducts = async (req, res) => {
     try {
-      const result = await this.db.query(GET_ALL_PRODUCTS)
-      const products = result?.rows || result;
+      const products = await this.model.getAllProducts();
       if (products.length === 0)
         return res.json({ message: "No hay productos en la base de datos." });
 
@@ -31,8 +20,7 @@ export class ProductController {
   getAllProductsByUserId = async (req, res) => {
     const { userId } = req;
     try {
-      const result = await this.db.query(GET_ALL_PRODUCTS_BY_USER_ID, [userId]);
-      const products = result?.rows || result;
+      const products = await this.model.getAllProductsByUserId(userId);
 
       if (products.length === 0)
         return res.json({ message: "No hay productos en la base de datos." });
@@ -48,8 +36,7 @@ export class ProductController {
   getProductById = async (req, res) => {
     const { id } = req.params;
     try {
-      const result = await this.db.query(GET_PRODUCT_BY_ID, [id]);
-      const product = this.getFirstRow(result);
+      const product = await this.model.getProductById(id);
 
       if (!product)
         return res.status(404).json({ message: "Producto no encontrado" });
@@ -82,12 +69,12 @@ export class ProductController {
       // Serializar el array de URLs como JSON para la columna `image`
       const imageJson = Array.isArray(imageUrls) ? JSON.stringify(imageUrls) : (imageUrls ?? null);
 
-      const result = await this.db.query(CREATE_PRODUCT, [
+      const newProduct = await this.model.createProduct({
         name,
         price,
         stock,
         condition,
-        imageJson,
+        image: imageJson,
         description,
         brand,
         temp,
@@ -95,9 +82,7 @@ export class ProductController {
         color,
         category,
         user_id,
-      ]);
-
-      const newProduct = this.getFirstRow(result);
+      });
 
       return res.status(201).json({ product: newProduct });
 
@@ -121,25 +106,24 @@ export class ProductController {
         imageJson = JSON.stringify(imageUrls);
       } else {
         // No se enviaron URLs → conservar las imágenes actuales de la BD
-        const currentProduct = this.getFirstRow(await this.db.query(GET_PRODUCT_BY_ID, [id]));
+        const currentProduct = await this.model.getProductById(id);
         imageJson = currentProduct?.image ?? null;
       }
 
-      const result = await this.db.query(UPDATE_PRODUCT, [
+      const updatedProduct = await this.model.updateProduct({
+        id,
         name,
         description,
         category,
         price,
         stock,
         condition,
-        imageJson,
+        image: imageJson,
         brand,
         temp,
         size,
         color,
-        id,
-      ]);
-      const updatedProduct = this.getFirstRow(result);
+      });
 
       if (!updatedProduct)
         return res.status(404).json({ message: "Producto no encontrado" });
@@ -156,8 +140,7 @@ export class ProductController {
     const { id } = req.params;
     try {
       // Obtener el producto para acceder a sus imágenes
-      const productResult = await this.db.query(GET_PRODUCT_BY_ID, [id]);
-      const product = this.getFirstRow(productResult);
+      const product = await this.model.getProductById(id);
 
       if (!product)
         return res.status(404).json({ message: "Producto no encontrado" });
@@ -176,8 +159,7 @@ export class ProductController {
       }
 
       // Eliminar producto de la base de datos
-      const result = await this.db.query(DELETE_PRODUCT, [id]);
-      const deletedProduct = this.getFirstRow(result);
+      const deletedProduct = await this.model.deleteProduct(id);
 
       if (!deletedProduct)
         return res.status(404).json({ message: "Producto no encontrado" });

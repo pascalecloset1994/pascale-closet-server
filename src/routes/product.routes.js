@@ -1,10 +1,12 @@
 import { Router } from "express";
 import { ProductController } from "../controllers/product.controller.js";
 import { isAuth } from "../middlewares/isAuth.js";
+import { ProductModel } from "../models/product.model.js";
 
 export const createProductsRouter = ({ db }) => {
   const productsRouter = Router();
-  const productController = new ProductController({ db });
+  const productModel = new ProductModel(db);
+  const productController = new ProductController({ model: productModel });
 
   productsRouter.get("/list-products", productController.listAllProducts);
   productsRouter.get("/products", isAuth, productController.getAllProductsByUserId);

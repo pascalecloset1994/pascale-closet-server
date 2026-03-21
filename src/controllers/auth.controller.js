@@ -1,10 +1,5 @@
 import { compare, hash } from "bcrypt";
 import {
-  CREATE_USER,
-  GET_USER_BY_EMAIL,
-  UPDATE_USER_PASSWORD,
-} from "./constants.js";
-import {
   createAccessToken,
   createResetToken,
   verifyResetToken,
@@ -27,11 +22,9 @@ export class AuthController {
     domain: ".pascalecloset.com",
   };
 
-  constructor({ db }) {
-    this.db = db;
+  constructor({ model }) {
+    this.model = model;
   }
-
-  getFirstRow = (result) => result?.rows?.[0] || result[0];
 
   userLogin = async (req, res) => {
     try {
@@ -40,8 +33,7 @@ export class AuthController {
       if (!email || !password)
         return res.status(400).json({ message: "Campos vacíos." });
 
-      const userExist = await this.db.query(GET_USER_BY_EMAIL, [email]);
-      const user = this.getFirstRow(userExist);
+      const user = await this.model.getUserByEmail(email);
 
       if (!user)
         return res
@@ -85,19 +77,17 @@ export class AuthController {
 
       const hashedPassword = await hash(password, 10);
 
-      const result = await this.db.query(CREATE_USER, [
+      const newUser = await this.model.createUser({
         name,
         lastName,
         email,
-        hashedPassword,
+        password: hashedPassword,
         role,
         ip,
         city,
         country,
         postalCode,
-      ]);
-
-      const newUser = this.getFirstRow(result);
+      });
 
       if (!newUser) {
         return res
@@ -166,8 +156,7 @@ export class AuthController {
     }
 
     try {
-      const userExist = await this.db.query(GET_USER_BY_EMAIL, [email]);
-      const userFound = this.getFirstRow(userExist);
+      const userFound = await this.model.getUserByEmail(email);
 
       if (!userFound) {
         return res.status(200).json({
@@ -227,7 +216,11 @@ export class AuthController {
       }
 
       const hashedPassword = await hash(password, 10);
-      await this.db.query(UPDATE_USER_PASSWORD, [userId, hashedPassword, true]);
+      await this.model.updateUserPassword({
+        userId,
+        password: hashedPassword,
+        updated: true,
+      });
 
       res.clearCookie("pascale_reset_token", {
         httpOnly: true,
