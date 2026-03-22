@@ -288,7 +288,7 @@ export class UserController {
       discount,
       discountDescription,
       discountIsActive: discount_is_active,
-      shippingPrice: shipping_price,
+      shipping_price,
     } = req.body;
 
     try {
