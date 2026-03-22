@@ -286,8 +286,8 @@ export class UserController {
   updateUserContent = async (req, res) => {
     const {
       discount,
+      discountDescription,
       discountIsActive: discount_is_active,
-      discountDescription: discount_description,
       shippingPrice: shipping_price,
     } = req.body;
 
@@ -303,8 +303,8 @@ export class UserController {
       const userContent = await this.model.updateUserContent({
         discountIsActive: discount_is_active,
         discount,
-        discountDescription: discount_description,
-        discountUpdatedAt: currentDiscount.discount_updated_at,
+        discountDescription,
+        discountUpdatedAt: discount ? new Date() : currentDiscount.discount_updated_at,
         shippingPrice: shipping_price,
         shippingUpdatedAt: shipping_price ? new Date() : null,
         shippingUpdate: shipping_price ? true : false
