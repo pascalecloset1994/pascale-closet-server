@@ -38,11 +38,11 @@ export class AuthController {
       if (!user)
         return res
           .status(404)
-          .json({ message: "Credenciales incorrectas." });
+          .json({ message: "Credenciales inválidas." });
 
       const validated = await compare(password, user.password);
       if (!validated)
-        return res.status(403).json({ message: "La contraseña es incorrecta" });
+        return res.status(403).json({ message: "Credenciales inválidas." });
 
       const token = await createAccessToken({ id: user.user_id });
 
@@ -92,7 +92,7 @@ export class AuthController {
       if (!newUser) {
         return res
           .status(409)
-          .json({ message: "Credenciales incorrectas." });
+          .json({ message: "Credenciales inválidas." });
       }
 
       const token = await createAccessToken({ id: newUser.user_id });
