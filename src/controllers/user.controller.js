@@ -297,7 +297,7 @@ export class UserController {
       if (!currentDiscount) {
         return res
           .status(404)
-          .json({ message: "Contenido de descuento no encontrado." });
+          .json({ message: "Contenido del usuario no encontrado." });
       }
 
       const userContent = await this.model.updateUserContent({
@@ -319,11 +319,11 @@ export class UserController {
 
       return res
         .status(200)
-        .json({ message: "Cupón actualizado correctamente.", userContent });
+        .json({ message: "Datos actualizados correctamente.", userContent });
     } catch (error) {
       return res
         .status(500)
-        .json({ message: "Error al actualizar los datos " + error.message });
+        .json({ message: "Error al actualizar los datos: " + error.message });
     }
   };
 

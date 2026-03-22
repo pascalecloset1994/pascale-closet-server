@@ -230,17 +230,16 @@ export class UserModel {
         try {
             const result = await this.db.query(
                 `UPDATE user_content
-                SET
+                  SET
                   discount_is_active = $1,
                   discount = $2,
                   discount_description = $3,
-                  discount_updated_at = NOW(),
-                  shipping_price = $4,
-                  shipping_price_updated_at = $5,
-                  shipping_price_update = $6
-                WHERE id = 1
-                  AND discount_updated_at IS NOT DISTINCT FROM $4
-                RETURNING *;`,
+                  discount_updated_at = $4,
+                  shipping_price = $5,
+                  shipping_price_updated_at = $6,
+                  shipping_price_update = $7
+                  WHERE id = 1
+                  RETURNING *;`,
                 [
                     discountIsActive,
                     discount,
