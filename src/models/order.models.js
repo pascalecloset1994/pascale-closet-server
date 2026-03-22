@@ -106,8 +106,8 @@ export class OrderModel {
       const orderId = row.id;
 
       const insertItem = `
-          INSERT INTO order_items (order_id, product_id, quantity, price)
-          VALUES ($1, $2, $3, $4);
+          INSERT INTO order_items (order_id, product_id, quantity, price, color, size)
+          VALUES ($1, $2, $3, $4, $5, $6);
         `;
 
       for (const item of items) {
@@ -116,6 +116,8 @@ export class OrderModel {
           item.id,
           item.quantity,
           item.price,
+          item.color,
+          item.size
         ]);
       }
 

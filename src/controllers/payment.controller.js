@@ -32,8 +32,12 @@ export class PaymentController {
         items: items.map((p) => ({
           title: p.name,
           quantity: p.quantity,
-          currency_id: "ARS",
+          currency_id: "CL",
           unit_price: Number(p.price),
+          description: p.description + `. 
+          Color: ${p.color},
+          Talle: ${p.size}
+          `,
         })),
         back_urls: {
           success: `${process.env.FRONT_URL}/order-confirmation/${order.order_id}`,
