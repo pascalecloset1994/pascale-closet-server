@@ -287,35 +287,22 @@ export class UserController {
     const {
       discount,
       discountDescription,
-      discountIsActive: discount_is_active,
+      discountIsActive,
       shipping_price,
     } = req.body;
 
     try {
-      const currentDiscount = await this.model.getDiscountVersion();
-
-      if (!currentDiscount) {
-        return res
-          .status(404)
-          .json({ message: "Contenido del usuario no encontrado." });
-      }
+      const currentDiscount = await this.model.getUserContent();
 
       const userContent = await this.model.updateUserContent({
-        discountIsActive: discount_is_active,
-        discount,
-        discountDescription,
-        discountUpdatedAt: discount ? new Date() : currentDiscount.discount_updated_at,
-        shippingPrice: shipping_price,
+        discountIsActive: discountIsActive ?? currentDiscount.discount_is_active,
+        discount: discount ?? currentDiscount.discount,
+        discountDescription: discountDescription ?? currentDiscount.discount_description,
+        discountUpdatedAt: discount !== currentDiscount.discount ? new Date() : currentDiscount.discount_updated_at,
+        shippingPrice: shipping_price ?? currentDiscount.shipping_price,
         shippingUpdatedAt: shipping_price ? new Date() : null,
         shippingUpdate: shipping_price ? true : false
       });
-
-      if (!userContent) {
-        return res.status(409).json({
-          message:
-            "Conflicto de concurrencia: el contenido de descuentos fue actualizado por otra sesión. Recarga e intenta nuevamente.",
-        });
-      }
 
       return res
         .status(200)
