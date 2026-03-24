@@ -6,28 +6,21 @@ import { UserModel } from "../models/user.models.js";
 
 export const createUserRouter = ({ db }) => {
   const userRouter = Router();
-  const userModel = new UserModel(db);
+  const userModel = new UserModel(db)
   const userController = new UserController({ model: userModel });
   const upload = multer({ storage: multer.memoryStorage() });
 
-  // ── Públicas
-  userRouter.get("/hero", userController.getUserClientHero);
-  userRouter.get("/footer", userController.getUserClientFooter);
-  userRouter.get("/content", userController.getUserContent);
-
-  // ── Protegidas
   userRouter.get("/profile", isAuth, userController.userProfile);
-  userRouter.get("/", isAuth, userController.getUserById);
-
-  // ---- Contenido del administrador
-  userRouter.put("/", isAuth, upload.single("image"), userController.updateUser);
-  userRouter.put("/hero", isAuth, upload.single("heroUrlImage"), userController.updateUserClientHero);
-  userRouter.put("/footer", isAuth, upload.single("footerUrlImage"), userController.updateUserClientFooter);
-
-  userRouter.patch("/shipping", isAuth, userController.updateUserShippingInformation);
-  userRouter.patch("/content", isAuth, userController.updateUserContent);
-
-  userRouter.delete("/", isAuth, userController.deleteUser);
+  userRouter.get("/id", isAuth, userController.getUserById);
+  userRouter.put("/update", isAuth, upload.single("image"), userController.updateUser);
+  userRouter.delete("/delete", isAuth, userController.deleteUser);
+  userRouter.get("/user_hero", userController.getUserClientHero);
+  userRouter.get("/user_footer", userController.getUserClientFooter);
+  userRouter.post("/user_hero/:id", isAuth, upload.single("heroUrlImage"), userController.updateUserClientHero);
+  userRouter.post("/user_footer/:id", isAuth, upload.single("footerUrlImage"), userController.updateUserClientFooter);
+  userRouter.patch("/update", isAuth, userController.updateUserShippingInformation);
+  userRouter.get("/content", userController.getUserContent);
+  userRouter.patch("/content-update", isAuth, userController.updateUserContent);
 
   return userRouter;
 };
