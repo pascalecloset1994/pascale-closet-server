@@ -141,10 +141,10 @@ export class UserModel {
         }
     }
 
-    async updateUserHero({ id, heroCollection, heroTitle, heroSubTitle, updated, imageUrl, updatedAt }) {
+    async updateUserHero({ id, heroCollection, heroTitle, heroSubTitle, updated, imageUrl }) {
         try {
             const result = await this.db.query(
-                "UPDATE user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 AND hero_updated_at IS NOT DISTINCT FROM $7 RETURNING *;",
+                "UPDATE user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 RETURNING *;",
                 [
                     id,
                     heroCollection,
@@ -152,7 +152,6 @@ export class UserModel {
                     heroSubTitle,
                     updated,
                     imageUrl,
-                    updatedAt,
                 ]
             );
             return this.getFirstRow(result);
