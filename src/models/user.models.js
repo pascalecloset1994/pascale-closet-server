@@ -122,9 +122,9 @@ export class UserModel {
         }
     }
 
-    async getUserHero() {
+    async getUserHero(id) {
         try {
-            const result = await this.db.query("SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = 1;")
+            const result = await this.db.query("SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = $1;", [id])
             const hero = this.getFirstRow(result);
             return hero;
         } catch (error) {
@@ -134,7 +134,7 @@ export class UserModel {
 
     async getHeroVersionById(id) {
         try {
-            const result = await this.db.query("SELECT hero_updated_at FROM user_content WHERE id = $1;", [id]);
+            const result = await this.db.query("SELECT hero_updated_at, hero_url_image FROM user_content WHERE id = $1;", [id]);
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -172,17 +172,17 @@ export class UserModel {
 
     async getFooterVersionById(id) {
         try {
-            const result = await this.db.query("SELECT updated_at FROM user_content WHERE id = $1;", [id]);
+            const result = await this.db.query("SELECT * FROM user_content WHERE id = $1;", [id]);
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
         }
     }
 
-    async updateUserFooter({ id, title, location, schedule, updated, imageUrl, updatedAt }) {
+    async updateUserFooter({ id, title, location, schedule, updated, imageUrl }) {
         try {
             const result = await this.db.query(
-                "UPDATE user_content SET updated_at = NOW(), title = $2, location = $3, schedule = $4, updated = $5, url_image = $6 WHERE ID = $1 AND updated_at IS NOT DISTINCT FROM $7 RETURNING *;",
+                "UPDATE user_content SET footer_updated_at = NOW(), footer_title = $2, footer_location = $3, footer_schedule = $4, footer_updated = $5, footer_url_image = $6 WHERE id = $1 RETURNING *;",
                 [
                     id,
                     title,
@@ -190,7 +190,6 @@ export class UserModel {
                     schedule,
                     updated,
                     imageUrl,
-                    updatedAt,
                 ]
             );
             return this.getFirstRow(result);

@@ -168,7 +168,6 @@ export class UserController {
 
   updateUserClientHero = async (req, res) => {
     try {
-      const { id } = req.params;
       const file = req.file ?? null;
       const { heroCollection, heroTitle, heroSubTitle } = req.body;
 
@@ -178,15 +177,11 @@ export class UserController {
           .json({ message: "Faltan datos del formulario." });
       }
 
-      const imageUrl = file ? await updateToBlob(file) : null;
-      const currentHero = await this.model.getHeroVersionById(id);
-
-      if (!currentHero) {
-        return res.status(404).json({ message: "Contenido Hero no encontrado." });
-      }
+      const currentHero = await this.model.getUserHero(1);
+      const imageUrl = file ? await updateToBlob(file) : currentHero.hero_url_image;
 
       const hero = await this.model.updateUserHero({
-        id,
+        id: 1,
         heroCollection,
         heroTitle,
         heroSubTitle,
@@ -194,13 +189,6 @@ export class UserController {
         imageUrl,
         updatedAt: currentHero.hero_updated_at,
       });
-
-      if (!hero) {
-        return res.status(409).json({
-          message:
-            "Conflicto de concurrencia: el Hero fue actualizado por otra sesión. Recarga e intenta nuevamente.",
-        });
-      }
 
       return res
         .status(200)
@@ -226,49 +214,34 @@ export class UserController {
 
   updateUserClientFooter = async (req, res) => {
     try {
-      const { id } = req.params;
       const file = req.file ?? null;
       const { title, location, schedule } = req.body;
 
       if (!title || !location || !schedule) {
-        return res
-          .status(400)
-          .json({ message: "Faltan datos del formulario." });
+        return res.status(400).json({ message: "Faltan datos del formulario." });
       }
 
-      const imageUrl = file ? await updateToBlob(file) : null;
-      const currentFooter = await this.model.getFooterVersionById(id);
-
-      if (!currentFooter) {
-        return res
-          .status(404)
-          .json({ message: "Contenido Footer no encontrado." });
-      }
+      const currentFooter = await this.model.getFooterVersionById(1);
+      const imageUrl = file ? await updateToBlob(file) : currentFooter.footer_url_image;
 
       const footer = await this.model.updateUserFooter({
-        id,
+        id: 1,
         title,
         location,
         schedule,
         updated: true,
         imageUrl,
-        updatedAt: currentFooter.updated_at,
       });
 
       if (!footer) {
         return res.status(409).json({
-          message:
-            "Conflicto de concurrencia: el Footer fue actualizado por otra sesión. Recarga e intenta nuevamente.",
+          message: "Conflicto de concurrencia: el Footer fue actualizado por otra sesión. Recarga e intenta nuevamente.",
         });
       }
 
-      return res
-        .status(200)
-        .json({ message: "Footer actualizado con éxito", footer });
+      return res.status(200).json({ message: "Footer actualizado con éxito", footer });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Error al actualizar el footer: " + error.message });
+      return res.status(500).json({ message: "Error al actualizar el footer: " + error.message });
     }
   };
 
