@@ -8,7 +8,7 @@ import { createOrderRouter } from "./order.routes.js";
 export const createAppRouter = ({ db }) => {
    const appRouter = Router();
 
-   appRouter.use("/user", createAuthRouter({ db }));
+   appRouter.use("/auth", createAuthRouter({ db }));
    appRouter.use("/user", createUserRouter({ db }));
    appRouter.use(createProductsRouter({ db }));
    appRouter.use(createOrderRouter({ db }));
