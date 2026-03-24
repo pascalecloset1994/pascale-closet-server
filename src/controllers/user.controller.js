@@ -273,7 +273,7 @@ export class UserController {
         discountDescription: discount_description || currentDiscount.discount_description,
         discountUpdatedAt: discount !== currentDiscount.discount ? new Date() : currentDiscount.discount_updated_at,
         shippingPrice: shipping_price || currentDiscount.shipping_price,
-        shippingUpdatedAt: shipping_price !== currentDiscount.shipping_price ? new Date() : null,
+        shippingUpdatedAt: shipping_price !== currentDiscount.shipping_price ? new Date() : currentDiscount.shipping_price_updated_at,
         shippingUpdate: shipping_price ? true : false
       });
 
