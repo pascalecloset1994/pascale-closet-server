@@ -202,7 +202,7 @@ export class UserController {
 
   getUserClientFooter = async (req, res) => {
     try {
-      const footer = await this.model.getUserFooter();
+      const footer = await this.model.getUserFooter(1);
 
       return res.status(200).json({ message: "Footer del usuario", footer });
     } catch (error) {
@@ -221,7 +221,7 @@ export class UserController {
         return res.status(400).json({ message: "Faltan datos del formulario." });
       }
 
-      const currentFooter = await this.model.getFooterVersionById(1);
+      const currentFooter = await this.model.getUserFooter(1);
       const imageUrl = file ? await updateToBlob(file) : currentFooter.footer_url_image;
 
       const footer = await this.model.updateUserFooter({

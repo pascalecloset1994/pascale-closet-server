@@ -161,18 +161,9 @@ export class UserModel {
         }
     }
 
-    async getUserFooter() {
+    async getUserFooter(id) {
         try {
-            const result = await this.db.query("SELECT footer_title, footer_location, footer_schedule, footer_url_image, footer_updated, footer_updated_at FROM user_content WHERE id = 1;");
-            return this.getFirstRow(result);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async getFooterVersionById(id) {
-        try {
-            const result = await this.db.query("SELECT * FROM user_content WHERE id = $1;", [id]);
+            const result = await this.db.query("SELECT footer_title, footer_location, footer_schedule, footer_url_image, footer_updated, footer_updated_at FROM user_content WHERE id = $1;", [id]);
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
