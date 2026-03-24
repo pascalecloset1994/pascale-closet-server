@@ -11,6 +11,13 @@ export const createUserRouter = ({ db }) => {
   const upload = multer({ storage: multer.memoryStorage() });
 
   // =========================
+  // CONTENIDO (público)
+  // =========================
+  userRouter.get("/content", userController.getUserContent);
+  userRouter.get("/content/hero", userController.getUserClientHero);
+  userRouter.get("/content/footer", userController.getUserClientFooter);
+
+  // =========================
   // PERFIL (privado)
   // =========================
   userRouter.get("/profile", isAuth, userController.userProfile);
@@ -23,13 +30,6 @@ export const createUserRouter = ({ db }) => {
     upload.single("image"),
     userController.updateUser
   );
-
-  // =========================
-  // CONTENIDO (público)
-  // =========================
-  userRouter.get("/content", userController.getUserContent);
-  userRouter.get("/content/hero", userController.getUserClientHero);
-  userRouter.get("/content/footer", userController.getUserClientFooter);
 
   // =========================
   // CONTENIDO (privado - admin)
