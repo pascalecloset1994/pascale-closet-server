@@ -117,7 +117,7 @@ export class UserController {
 
   getUserClientHero = async (req, res) => {
     try {
-      const hero = await this.model.getUserHero();
+      const hero = await this.model.getUserHero(1);
 
       return res.status(200).json({ message: "Hero del usuario", hero });
     } catch (error) {
