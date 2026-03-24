@@ -268,7 +268,7 @@ export class UserController {
       const currentDiscount = await this.model.getUserContent();
 
       const userContent = await this.model.updateUserContent({
-        discountIsActive: discountIsActive ?? currentDiscount.discount_is_active,
+        discountIsActive,
         discount: discount ?? currentDiscount.discount,
         discountDescription: discountDescription ?? currentDiscount.discount_description,
         discountUpdatedAt: discount !== currentDiscount.discount ? new Date() : currentDiscount.discount_updated_at,
