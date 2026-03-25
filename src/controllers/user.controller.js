@@ -42,6 +42,7 @@ export class UserController {
 
       if (!name || !lastname || !email || !city || !postalCode)
         return res.status(400).json({ message: "Campos vacíos." });
+
       const user = await this.model.getUserById(userId);
 
       if (!user) {
@@ -115,18 +116,6 @@ export class UserController {
     }
   };
 
-  getUserClientHero = async (req, res) => {
-    try {
-      const hero = await this.model.getUserHero(1);
-
-      return res.status(200).json({ message: "Hero del usuario", hero });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Error al obtener los datos del hero: " + error.message,
-      });
-    }
-  };
-
   updateUserShippingInformation = async (req, res) => {
     try {
       const { userId } = req;
@@ -166,136 +155,7 @@ export class UserController {
     }
   };
 
-  updateUserClientHero = async (req, res) => {
-    try {
-      const file = req.file ?? null;
-      const { heroCollection, heroTitle, heroSubTitle } = req.body;
-
-      if (!heroCollection || !heroTitle || !heroSubTitle) {
-        return res
-          .status(400)
-          .json({ message: "Faltan datos del formulario." });
-      }
-
-      const currentHero = await this.model.getUserHero(1);
-      const imageUrl = file ? await updateToBlob(file) : currentHero.hero_url_image;
-
-      const hero = await this.model.updateUserHero({
-        id: 1,
-        heroCollection,
-        heroTitle,
-        heroSubTitle,
-        updated: true,
-        imageUrl,
-        updatedAt: currentHero.hero_updated_at,
-      });
-
-      return res
-        .status(200)
-        .json({ message: "Hero actualizado con éxito", hero });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Error al actualizar el hero: " + error.message });
-    }
-  };
-
-  getUserClientFooter = async (req, res) => {
-    try {
-      const footer = await this.model.getUserFooter(1);
-
-      return res.status(200).json({ message: "Footer del usuario", footer });
-    } catch (error) {
-      return res.status(500).json({
-        message: "Error al obtener los datos del footer: " + error.message,
-      });
-    }
-  };
-
-  updateUserClientFooter = async (req, res) => {
-    try {
-      const file = req.file ?? null;
-      const { title, location, schedule } = req.body;
-
-      if (!title || !location || !schedule) {
-        return res.status(400).json({ message: "Faltan datos del formulario." });
-      }
-
-      const currentFooter = await this.model.getUserFooter(1);
-      const imageUrl = file ? await updateToBlob(file) : currentFooter.footer_url_image;
-
-      const footer = await this.model.updateUserFooter({
-        id: 1,
-        title,
-        location,
-        schedule,
-        updated: true,
-        imageUrl,
-      });
-
-      if (!footer) {
-        return res.status(409).json({
-          message: "Conflicto de concurrencia: el Footer fue actualizado por otra sesión. Recarga e intenta nuevamente.",
-        });
-      }
-
-      return res.status(200).json({ message: "Footer actualizado con éxito", footer });
-    } catch (error) {
-      return res.status(500).json({ message: "Error al actualizar el footer: " + error.message });
-    }
-  };
-
-  getUserContent = async (req, res) => {
-    try {
-      const userContent = await this.model.getUserContent();
-      return res.status(200).json({ userContent: userContent });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Error al obtener los datos " + error.message });
-    }
-  };
-
-  updateUserContent = async (req, res) => {
-    const {
-      discount,
-      discount_description,
-      discount_is_active,
-      shipping_price,
-    } = req.body;
-
-    try {
-      const currentDiscount = await this.model.getUserContent();
-
-      const userContent = await this.model.updateUserContent({
-        discount_is_active: discount_is_active ?? currentDiscount.discount_is_active,
-        discount: discount || currentDiscount.discount,
-        discountDescription: discount_description || currentDiscount.discount_description,
-        discountUpdatedAt: discount !== currentDiscount.discount ? new Date() : currentDiscount.discount_updated_at,
-        shippingPrice: shipping_price || currentDiscount.shipping_price,
-        shippingUpdatedAt: shipping_price !== currentDiscount.shipping_price ? new Date() : currentDiscount.shipping_price_updated_at,
-        shippingUpdate: shipping_price ? true : false
-      });
-
-      return res
-        .status(200)
-        .json({ message: "Datos actualizados correctamente.", userContent });
-    } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Error al actualizar los datos: " + error.message });
-    }
-  };
-
-  getShippingPrice = async (req, res) => {
-    try {
-      const shipping_price = await this.model.getShippingPrice();
-
-      return res.status(200).json(shipping_price);
-    } catch (error) {
-      return res.status(500).json({ message: "Error al obtener precio de envío." });
-    }
-  }
+  // ─── V2 ──────────────────────────────────────────────────────────────────────
 
   getUserContent_V2 = async (req, res) => {
     try {
@@ -304,43 +164,154 @@ export class UserController {
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
-  }
+  };
+
+  // ─── Hero V2 ─────────────────────────────────────────────────────────────────
 
   getUserHeroContent_V2 = async (req, res) => {
     try {
-      const userHeroContent = await this.model.getUserHeroContent_V2(1);
-      return res.status(200).json(userHeroContent);
+      const hero = await this.model.getUserHeroContent_V2(1);
+      return res.status(200).json(hero);
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
-  }
+  };
 
-  updateUserContentHero_V2 = async (req, res) => {
-    const file = req.file ?? null;
-    const { heroCollection, heroTitle, heroSubTitle } = req.body;
+  updateUserHeroContent_V2 = async (req, res) => {
     try {
-      const currentHeroContent = await this.model.getUserHeroContent_V2(1);
-      const heroImageUrl = file ? updateToBlob(file) : currentHeroContent.image;
-      const heroContent = await this.model.updateHeroContent_V2(1, heroCollection, heroTitle, heroSubTitle, heroImageUrl, true);
-      if (!heroContent) {
-        return res.status(400).json({ message: "Cago" })
-      }
-      return res.status(200).json({ message: "Hero actualizado.", heroContent });
-    } catch (error) {
-      return res.status(500).json({ message: error.message })
-    }
-  }
+      const file = req.file ?? null;
+      const { heroCollection, heroTitle, heroSubTitle } = req.body;
 
-  updateUserContentFooter_V2 = async (req, res) => {
-    const { footerTitle, footerLocation, footerSchedule, footerImage } = req.body;
-    try {
-      const footerContent = await this.model.updateFooterContent_V2(1, footerTitle, footerLocation, footerSchedule, footerImage, true);
-      if (!footerContent) {
-        return res.status(400).json({ message: "Cago" })
+      if (!heroCollection || !heroTitle || !heroSubTitle) {
+        return res.status(400).json({ message: "Faltan datos del formulario." });
       }
-      return res.status(200).json({ message: "Footer actualizado.", footerContent });
+
+      const currentHero = await this.model.getUserHeroContent_V2(1);
+
+      if (!currentHero) {
+        return res.status(404).json({ message: "Contenido del hero no encontrado." });
+      }
+
+      const heroImage = file ? await updateToBlob(file) : currentHero.image;
+
+      const hero = await this.model.updateHeroContent_V2({
+        id: 1,
+        heroCollection,
+        heroTitle,
+        heroSubTitle,
+        heroImage,
+        heroUpdated: true,
+      });
+
+      return res.status(200).json({ message: "Hero actualizado.", hero });
     } catch (error) {
-      return res.status(500).json({ message: error.message })
+      return res.status(500).json({ message: error.message });
     }
-  }
+  };
+
+  // ─── Footer V2 ───────────────────────────────────────────────────────────────
+
+  getUserFooterContent_V2 = async (req, res) => {
+    try {
+      const footer = await this.model.getUserFooterContent_V2(1);
+      return res.status(200).json(footer);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
+  updateUserFooterContent_V2 = async (req, res) => {
+    try {
+      const file = req.file ?? null;
+      const { footerTitle, footerLocation, footerSchedule } = req.body;
+
+      if (!footerTitle || !footerLocation || !footerSchedule) {
+        return res.status(400).json({ message: "Faltan datos del formulario." });
+      }
+
+      const currentFooter = await this.model.getUserFooterContent_V2(1);
+
+      if (!currentFooter) {
+        return res.status(404).json({ message: "Contenido del footer no encontrado." });
+      }
+
+      const footerImage = file ? await updateToBlob(file) : currentFooter?.image;
+
+      const footer = await this.model.updateFooterContent_V2({
+        id: 1,
+        footerTitle,
+        footerLocation,
+        footerSchedule,
+        footerImage,
+        footerUpdated: true,
+      });
+
+      return res.status(200).json({ message: "Footer actualizado.", footer });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
+  // ─── Shipping V2 ─────────────────────────────────────────────────────────────
+
+  getShippingPrice_V2 = async (req, res) => {
+    try {
+      const shipping = await this.model.getShippingPrice(1);
+      return res.status(200).json(shipping);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
+  updateShippingContent_V2 = async (req, res) => {
+    try {
+      const { shippingPrice, shippingUpdate } = req.body;
+
+      if (shippingPrice === undefined) {
+        return res.status(400).json({ message: "Faltan datos del formulario." });
+      }
+
+      const shipping = await this.model.updateShippingContent_V2({
+        id: 1,
+        shippingPrice,
+        shippingUpdate: shippingUpdate ?? true,
+      });
+
+      return res.status(200).json({ message: "Precio de envío actualizado.", shipping });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
+  // ─── Discount V2 ─────────────────────────────────────────────────────────────
+
+  getDiscountContent_V2 = async (req, res) => {
+    try {
+      const discount = await this.model.getDiscountContent_V2(1);
+      return res.status(200).json(discount);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
+
+  updateDiscountContent_V2 = async (req, res) => {
+    try {
+      const { discountIsActive, discount, discountDescription } = req.body;
+
+      if (discount === undefined || !discountDescription) {
+        return res.status(400).json({ message: "Faltan datos del formulario." });
+      }
+
+      const updatedDiscount = await this.model.updateDiscountContent_V2({
+        id: 1,
+        discountIsActive: discountIsActive ?? false,
+        discount,
+        discountDescription,
+      });
+
+      return res.status(200).json({ message: "Descuento actualizado.", discount: updatedDiscount });
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  };
 }

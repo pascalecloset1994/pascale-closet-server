@@ -245,9 +245,14 @@ export class UserModel {
         }
     }
 
-    async getShippingPrice(id = 1) {
+    // ─── V2 ──────────────────────────────────────────────────────────────────────
+
+    async getShippingPrice(id) {
         try {
-            const result = await this.db.query("SELECT shipping_price FROM user_content WHERE id = $1;", [id]);
+            const result = await this.db.query(
+                "SELECT shipping FROM user_content_v2 WHERE id = $1;",
+                [id]
+            );
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -256,77 +261,138 @@ export class UserModel {
 
     async getUserContent_V2(id) {
         try {
-            const result = await this.db.query("SELECT * FROM user_content_v2 WHERE id = $1;", [id]);
-            const userContent_V2 = this.getFirstRow(result);
-            return userContent_V2;
+            const result = await this.db.query(
+                "SELECT * FROM user_content_v2 WHERE id = $1;",
+                [id]
+            );
+            return this.getFirstRow(result);
         } catch (error) {
             throw error;
         }
     }
+
+    // ─── Hero V2 ─────────────────────────────────────────────────────────────────
 
     async getUserHeroContent_V2(id) {
         try {
-            const result = await this.db.query("SELECT hero FROM user_content_v2 WHERE id = $1;", [id]);
-            const userHeroContent_V2 = this.getFirstRow(result);
-            return userHeroContent_V2;
+            const result = await this.db.query(
+                "SELECT hero FROM user_content_v2 WHERE id = $1;",
+                [id]
+            );
+            return this.getFirstRow(result);
         } catch (error) {
             throw error;
         }
     }
 
-    async updateHeroContent_V2(id, heroCollection, heroTitle, heroSubTitle, heroImage, heroUpdated) {
+    async updateHeroContent_V2({ id, heroCollection, heroTitle, heroSubTitle, heroImage, heroUpdated }) {
         try {
             const result = await this.db.query(
-                `UPDATE public.user_content_v2
+                `UPDATE user_content_v2
                     SET hero = hero || jsonb_build_object(
-                    'collection': $2:.text,
-                    'title', $3::text,
-                    'subtitle', $4::text,
-                    'image', $5::text,
-                    'updated', $6::boolean,
-                    'updated_at', NOW()
+                        'collection', $2::text,
+                        'title',      $3::text,
+                        'subtitle',   $4::text,
+                        'image',      $5::text,
+                        'updated',    $6::boolean,
+                        'updated_at', NOW()::text
                     )
                     WHERE id = $1
-                    RETURNING *;
-                    `,
+                    RETURNING hero;`,
                 [id, heroCollection, heroTitle, heroSubTitle, heroImage, heroUpdated]
             );
-            const userHeroContent = this.getFirstRow(result);
-            return userHeroContent;
+            return this.getFirstRow(result);
         } catch (error) {
             throw error;
         }
     }
+
+    // ─── Footer V2 ───────────────────────────────────────────────────────────────
 
     async getUserFooterContent_V2(id) {
         try {
-            const result = await this.db.query("SELECT footer FROM user_content_v2 WHERE id = $1;", [id]);
-            const userFooterContent_V2 = this.getFirstRow(result);
-            return userFooterContent_V2;
+            const result = await this.db.query(
+                "SELECT footer FROM user_content_v2 WHERE id = $1;",
+                [id]
+            );
+            return this.getFirstRow(result);
         } catch (error) {
             throw error;
         }
     }
 
-    async updateFooterContent_V2(id, footerTitle, footerLocation, footerSchedule, footerImage, footerUpdated) {
+    async updateFooterContent_V2({ id, footerTitle, footerLocation, footerSchedule, footerImage, footerUpdated }) {
         try {
             const result = await this.db.query(
-                `UPDATE public.user_content_v2
+                `UPDATE user_content_v2
                     SET footer = footer || jsonb_build_object(
-                    'title': $2:.text,
-                    'location', $3::text,
-                    'schedule', $4::text,
-                    'image', $5::text,
-                    'updated', $6::boolean,
-                    'updated_at', NOW()
+                        'title',      $2::text,
+                        'location',   $3::text,
+                        'schedule',   $4::text,
+                        'image',      $5::text,
+                        'updated',    $6::boolean,
+                        'updated_at', NOW()::text
                     )
                     WHERE id = $1
-                    RETURNING *;
-                    `,
+                    RETURNING footer;`,
                 [id, footerTitle, footerLocation, footerSchedule, footerImage, footerUpdated]
             );
-            const footerContent = this.getFirstRow(result);
-            return footerContent;
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // ─── Shipping V2 ─────────────────────────────────────────────────────────────
+
+    async updateShippingContent_V2({ id, shippingPrice, shippingUpdated }) {
+        try {
+            const result = await this.db.query(
+                `UPDATE user_content_v2
+                    SET shipping = shipping || jsonb_build_object(
+                        'price',      $2::numeric,
+                        'updated',     $3::boolean,
+                        'updated_at', NOW()::text
+                    )
+                    WHERE id = $1
+                    RETURNING shipping;`,
+                [id, shippingPrice, shippingUpdated]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    // ─── Discount V2 ─────────────────────────────────────────────────────────────
+
+    async getDiscountContent_V2(id) {
+        try {
+            const result = await this.db.query(
+                "SELECT discount FROM user_content_v2 WHERE id = $1;",
+                [id]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateDiscountContent_V2({ id, discountIsActive, discount, discountDescription }) {
+        try {
+            const result = await this.db.query(
+                `UPDATE user_content_v2
+                    SET discount = discount || jsonb_build_object(
+                        'is_active',    $2::boolean,
+                        'value',        $3::numeric,
+                        'description',  $4::text,
+                        'updated_at',   NOW()::text
+                    )
+                    WHERE id = $1
+                    RETURNING discount;`,
+                [id, discountIsActive, discount, discountDescription]
+            );
+            return this.getFirstRow(result);
         } catch (error) {
             throw error;
         }

@@ -13,11 +13,11 @@ export const createUserRouter = ({ db }) => {
   // =========================
   // CONTENIDO (público)
   // =========================
-  userRouter.get("/content", userController.getUserContent);
-  userRouter.get("/content/hero", userController.getUserHeroContent_V2);
-  userRouter.get("/content/footer", userController.getUserClientFooter);
-  // Contentido del administrador V2 (PUBLICO)
   userRouter.get("/content_v2", userController.getUserContent_V2);
+  userRouter.get("/content/hero", userController.getUserHeroContent_V2);
+  userRouter.get("/content/footer", userController.getUserFooterContent_V2);
+  userRouter.get("/content/shipping", userController.getShippingPrice_V2);
+  userRouter.get("/content/discount", userController.getDiscountContent_V2);
 
   // =========================
   // PERFIL (privado)
@@ -25,7 +25,6 @@ export const createUserRouter = ({ db }) => {
   userRouter.get("/profile", isAuth, userController.userProfile);
   userRouter.get("/:id", isAuth, userController.getUserById);
 
-  // Actualización parcial del perfil
   userRouter.patch(
     "/profile",
     isAuth,
@@ -33,44 +32,39 @@ export const createUserRouter = ({ db }) => {
     userController.updateUser
   );
 
-  // =========================
-  // CONTENIDO (privado - admin)
-  // =========================
-
-  // Hero (imagen + datos)
   userRouter.patch(
-    "/content/hero",
-    isAuth,
-    upload.single("heroUrlImage"),
-    userController.updateUserContentHero_V2
-  );
-
-  // Footer (imagen + datos)
-  userRouter.patch(
-    "/content/footer",
-    isAuth,
-    upload.single("footerUrlImage"),
-    userController.updateUserClientFooter
-  );
-  userRouter.patch(
-    "/content/footer",
-    isAuth,
-    upload.single("footerUrlImage"),
-    userController.updateUserContentFooter_V2
-  );
-
-  // Información datos de envío usuarios
-  userRouter.patch(
-    "/content/shipping",
+    "/profile/shipping",
     isAuth,
     userController.updateUserShippingInformation
   );
 
-  // Otros cambios generales de contenido
+  // =========================
+  // CONTENIDO (privado - admin)
+  // =========================
   userRouter.patch(
-    "/content",
+    "/content/hero",
     isAuth,
-    userController.updateUserContent
+    upload.single("heroUrlImage"),
+    userController.updateUserHeroContent_V2
+  );
+
+  userRouter.patch(
+    "/content/footer",
+    isAuth,
+    upload.single("footerUrlImage"),
+    userController.updateUserFooterContent_V2
+  );
+
+  userRouter.patch(
+    "/content/shipping",
+    isAuth,
+    userController.updateShippingContent_V2
+  );
+
+  userRouter.patch(
+    "/content/discount",
+    isAuth,
+    userController.updateDiscountContent_V2
   );
 
   // =========================
