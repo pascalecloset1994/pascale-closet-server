@@ -268,7 +268,7 @@ export class UserController {
       const currentDiscount = await this.model.getUserContent();
 
       const userContent = await this.model.updateUserContent({
-        discount_is_active,
+        discount_is_active: discount_is_active ?? currentDiscount.discount_is_active,
         discount: discount || currentDiscount.discount,
         discountDescription: discount_description || currentDiscount.discount_description,
         discountUpdatedAt: discount !== currentDiscount.discount ? new Date() : currentDiscount.discount_updated_at,
@@ -294,6 +294,53 @@ export class UserController {
       return res.status(200).json(shipping_price);
     } catch (error) {
       return res.status(500).json({ message: "Error al obtener precio de envío." });
+    }
+  }
+
+  getUserContent_V2 = async (req, res) => {
+    try {
+      const userContent = await this.model.getUserContent_V2(1);
+      return res.status(200).json(userContent);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  getUserHeroContent_V2 = async (req, res) => {
+    try {
+      const userHeroContent = await this.model.getUserHeroContent_V2(1);
+      return res.status(200).json(userHeroContent);
+    } catch (error) {
+      return res.status(500).json({ message: error.message });
+    }
+  }
+
+  updateUserContentHero_V2 = async (req, res) => {
+    const file = req.file ?? null;
+    const { heroCollection, heroTitle, heroSubTitle } = req.body;
+    try {
+      const currentHeroContent = await this.model.getUserHeroContent_V2(1);
+      const heroImageUrl = file ? updateToBlob(file) : currentHeroContent.image;
+      const heroContent = await this.model.updateHeroContent_V2(1, heroCollection, heroTitle, heroSubTitle, heroImageUrl, true);
+      if (!heroContent) {
+        return res.status(400).json({ message: "Cago" })
+      }
+      return res.status(200).json({ message: "Hero actualizado.", heroContent });
+    } catch (error) {
+      return res.status(500).json({ message: error.message })
+    }
+  }
+
+  updateUserContentFooter_V2 = async (req, res) => {
+    const { footerTitle, footerLocation, footerSchedule, footerImage } = req.body;
+    try {
+      const footerContent = await this.model.updateFooterContent_V2(1, footerTitle, footerLocation, footerSchedule, footerImage, true);
+      if (!footerContent) {
+        return res.status(400).json({ message: "Cago" })
+      }
+      return res.status(200).json({ message: "Footer actualizado.", footerContent });
+    } catch (error) {
+      return res.status(500).json({ message: error.message })
     }
   }
 }

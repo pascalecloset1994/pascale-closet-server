@@ -14,8 +14,10 @@ export const createUserRouter = ({ db }) => {
   // CONTENIDO (público)
   // =========================
   userRouter.get("/content", userController.getUserContent);
-  userRouter.get("/content/hero", userController.getUserClientHero);
+  userRouter.get("/content/hero", userController.getUserHeroContent_V2);
   userRouter.get("/content/footer", userController.getUserClientFooter);
+  // Contentido del administrador V2 (PUBLICO)
+  userRouter.get("/content_v2", userController.getUserContent_V2);
 
   // =========================
   // PERFIL (privado)
@@ -40,7 +42,7 @@ export const createUserRouter = ({ db }) => {
     "/content/hero",
     isAuth,
     upload.single("heroUrlImage"),
-    userController.updateUserClientHero
+    userController.updateUserContentHero_V2
   );
 
   // Footer (imagen + datos)
@@ -49,6 +51,12 @@ export const createUserRouter = ({ db }) => {
     isAuth,
     upload.single("footerUrlImage"),
     userController.updateUserClientFooter
+  );
+  userRouter.patch(
+    "/content/footer",
+    isAuth,
+    upload.single("footerUrlImage"),
+    userController.updateUserContentFooter_V2
   );
 
   // Información datos de envío usuarios

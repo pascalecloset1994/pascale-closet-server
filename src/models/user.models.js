@@ -253,4 +253,82 @@ export class UserModel {
             throw error;
         }
     }
+
+    async getUserContent_V2(id) {
+        try {
+            const result = await this.db.query("SELECT * FROM user_content_v2 WHERE id = $1;", [id]);
+            const userContent_V2 = this.getFirstRow(result);
+            return userContent_V2;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getUserHeroContent_V2(id) {
+        try {
+            const result = await this.db.query("SELECT hero FROM user_content_v2 WHERE id = $1;", [id]);
+            const userHeroContent_V2 = this.getFirstRow(result);
+            return userHeroContent_V2;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateHeroContent_V2(id, heroCollection, heroTitle, heroSubTitle, heroImage, heroUpdated) {
+        try {
+            const result = await this.db.query(
+                `UPDATE public.user_content_v2
+                    SET hero = hero || jsonb_build_object(
+                    'collection': $2:.text,
+                    'title', $3::text,
+                    'subtitle', $4::text,
+                    'image', $5::text,
+                    'updated', $6::boolean,
+                    'updated_at', NOW()
+                    )
+                    WHERE id = $1
+                    RETURNING *;
+                    `,
+                [id, heroCollection, heroTitle, heroSubTitle, heroImage, heroUpdated]
+            );
+            const userHeroContent = this.getFirstRow(result);
+            return userHeroContent;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getUserFooterContent_V2(id) {
+        try {
+            const result = await this.db.query("SELECT footer FROM user_content_v2 WHERE id = $1;", [id]);
+            const userFooterContent_V2 = this.getFirstRow(result);
+            return userFooterContent_V2;
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateFooterContent_V2(id, footerTitle, footerLocation, footerSchedule, footerImage, footerUpdated) {
+        try {
+            const result = await this.db.query(
+                `UPDATE public.user_content_v2
+                    SET footer = footer || jsonb_build_object(
+                    'title': $2:.text,
+                    'location', $3::text,
+                    'schedule', $4::text,
+                    'image', $5::text,
+                    'updated', $6::boolean,
+                    'updated_at', NOW()
+                    )
+                    WHERE id = $1
+                    RETURNING *;
+                    `,
+                [id, footerTitle, footerLocation, footerSchedule, footerImage, footerUpdated]
+            );
+            const footerContent = this.getFirstRow(result);
+            return footerContent;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

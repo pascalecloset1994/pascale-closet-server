@@ -4,6 +4,8 @@ import { createAuthRouter } from "./auth.routes.js";
 import { createUserRouter } from "./user.routes.js";
 import { createPaymentRouter } from "./payment.routes.js";
 import { createOrderRouter } from "./order.routes.js";
+import { neonDB } from "../config/dbConfig.js";
+import { UserModel } from "../models/user.models.js";
 
 export const createAppRouter = ({ db }) => {
    const appRouter = Router();
@@ -13,6 +15,8 @@ export const createAppRouter = ({ db }) => {
    appRouter.use(createProductsRouter({ db }));
    appRouter.use(createOrderRouter({ db }));
    appRouter.use("/payment", createPaymentRouter({ db }));
+
+   // Logger temporal
    appRouter.post("/loger", async (req, res) => {
       try {
          const { log } = req.body
