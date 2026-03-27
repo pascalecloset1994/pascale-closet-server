@@ -3,8 +3,8 @@ export class UserModel {
     constructor(db) {
         this.db = db;
     }
-    getFirstRow = (result) => result?.rows?.[0] || result?.[0]
-    getRows = (result) => result?.rows || result || []
+    getFirstRow = (result) => result?.rows?.[0] || result?.[0];
+    getRows = (result) => result?.rows || result || [];
 
     async getAllUsers() {
         try {
@@ -37,10 +37,11 @@ export class UserModel {
     async createUser({ name, lastname, email, password, role, ip, city, country, postalCode }) {
         try {
             const result = await this.db.query(
-                `INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-            ON CONFLICT (email) DO NOTHING
-            RETURNING *;`, [
+                `
+                INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (email) DO NOTHING
+                RETURNING *;`, [
                 name,
                 lastname,
                 email,
@@ -60,9 +61,11 @@ export class UserModel {
     async updateUser({ userId, name, lastname, email, updated, avatar, city, country, postalCode, updatedAt }) {
         try {
             const result = await this.db.query(`
+                BEGIN;
                 UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = NOW(), 
                 avatar = $6, city = $7, country = $8, postal_code = $9 
                 WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $10 RETURNING *;
+                COMMIT;
                 `, [
                 userId,
                 name,
@@ -84,8 +87,10 @@ export class UserModel {
     async updatePartialUser({ userId, address, phone, state, updated, updatedAt }) {
         try {
             const result = await this.db.query(`
+                BEGIN;
                 UPDATE users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = NOW() 
                 WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $6 RETURNING *;
+                COMMIT;
                 `, [
                 userId,
                 address,
@@ -102,7 +107,11 @@ export class UserModel {
 
     async updateUserPassword({ userId, password, updated }) {
         try {
-            const result = await this.db.query("UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;", [
+            const result = await this.db.query(`
+                BEGIN;
+                UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;
+                COMMIT;
+                `, [
                 userId,
                 password,
                 updated,
