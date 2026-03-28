@@ -46,7 +46,7 @@ export class ProductModel {
         image,
         description,
         brand,
-        temp,
+        season,
         size,
         color,
         category,
@@ -54,7 +54,7 @@ export class ProductModel {
     }) {
         try {
             const result = await this.db.query(
-                `INSERT INTO products (name, price, stock, condition, image, description, brand, temp, size, color, category, user_id)
+                `INSERT INTO products (name, price, stock, condition, image, description, brand, season, size, color, category, user_id)
 				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;`,
                 [
                     name,
@@ -64,7 +64,7 @@ export class ProductModel {
                     image,
                     description,
                     brand,
-                    temp,
+                    season,
                     size,
                     color,
                     category,
@@ -88,13 +88,13 @@ export class ProductModel {
         condition,
         image,
         brand,
-        temp,
+        seaosn,
         size,
         color,
     }) {
         try {
             const result = await this.db.query(
-                "UPDATE products SET name = $1, description = $2, category = $3, price = $4, stock = $5, condition = $6, image = $7, brand = $8, temp = $9, size = $10, color = $11 WHERE id = $12 RETURNING *;",
+                "UPDATE products SET name = $1, description = $2, category = $3, price = $4, stock = $5, condition = $6, image = $7, brand = $8, season = $9, size = $10, color = $11 WHERE id = $12 RETURNING *;",
                 [
                     name,
                     description,
@@ -104,7 +104,7 @@ export class ProductModel {
                     condition,
                     image,
                     brand,
-                    temp,
+                    seaosn,
                     size,
                     color,
                     id,

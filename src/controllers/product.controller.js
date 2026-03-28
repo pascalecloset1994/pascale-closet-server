@@ -58,7 +58,7 @@ export class ProductController {
       description,
       imageUrls,
       brand,
-      temp,
+      season,
       size,
       color,
       category,
@@ -77,7 +77,7 @@ export class ProductController {
         image: imageJson,
         description,
         brand,
-        temp,
+        season,
         size,
         color,
         category,
@@ -96,7 +96,7 @@ export class ProductController {
   updateProduct = async (req, res) => {
     const { id } = req.params;
     // El frontend envía application/json con imageUrls: string[] (ya subidas a Vercel Blob)
-    const { name, description, category, price, stock, condition, brand, temp, size, color, imageUrls } = req.body;
+    const { name, description, category, price, stock, condition, brand, season, size, color, imageUrls } = req.body;
 
     try {
       let imageJson;
@@ -120,7 +120,7 @@ export class ProductController {
         condition,
         image: imageJson,
         brand,
-        temp,
+        season,
         size,
         color,
       });
