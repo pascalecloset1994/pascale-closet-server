@@ -37,7 +37,7 @@ export class UserController {
     try {
       const { userId } = req;
       const file = req.file ?? null;
-      const { name, lastname, email, avatar, city, country, postalCode, address } =
+      const { name, lastname, email, city, country, postalCode, address } =
         req.body;
 
       if (!name || !lastname || !email || !city || !postalCode || !address)
