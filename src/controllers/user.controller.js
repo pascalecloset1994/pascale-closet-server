@@ -108,6 +108,9 @@ export class UserController {
       if (!user)
         return res.status(404).json({ message: "Usuario inexistente" });
 
+      delete user.ip;
+      delete user.password;
+
       return res.status(200).json({ user });
     } catch (error) {
       return res
