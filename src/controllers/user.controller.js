@@ -49,7 +49,7 @@ export class UserController {
         return res.status(404).json({ message: "Usuario no encontrado." });
       }
 
-      const urlImage = file ? await updateToBlob(file) : avatar;
+      const urlImage = file ? await updateToBlob(file) : user.avatar;
       const updatedUser = await this.model.updateUser({
         userId,
         name,
