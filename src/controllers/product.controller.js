@@ -173,4 +173,38 @@ export class ProductController {
         .json({ message: "Error al eliminar el producto: " + error.message });
     }
   };
+
+  // ---- Products_V2 -----------------------------------------------------------
+
+  createProduct_V2 = async (req, res) => {
+    const {
+      userId, name, description, brand, category, season, condition
+    } = req.body;
+
+    if (!userId || !name) {
+      return res.status(400).json({ message: "Faltan campos requeridos: userId, name" });
+    }
+
+    try {
+      const newProduct = await this.model.createProduct_V2({
+        userId, name, description, brand, category, season, condition
+      });
+
+      return res.status(201).json({
+        product: { ...newProduct }
+      });
+
+    } catch (error) {
+      console.error("[createProduct_V2]", error);
+      return res.status(500).json({ message: "Error al crear el producto (V2): " + error.message });
+    }
+  };
+
+  setProductVariants_V2 = async (req, res) => {
+    try {
+
+    } catch (error) {
+
+    }
+  }
 }

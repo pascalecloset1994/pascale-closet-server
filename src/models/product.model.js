@@ -128,4 +128,70 @@ export class ProductModel {
             throw error;
         }
     }
+
+    // ----- Nuevos métodos para arquitectura de datos products_V2
+
+    async getAllProducts_V2() {
+        try {
+            const result = await this.db.query("SELECT * FROM products_v2;");
+            return this.getRows(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async createProduct_V2({ userId, name, description, brand, category, season, condition }) {
+        try {
+            const result = await this.db.query(`
+                INSERT INTO products_v2 (user_id, name, description, brand, category, season, condition)
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+                `, [
+                userId,
+                name,
+                description,
+                brand,
+                category,
+                season,
+                condition,
+            ]);
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async setProductVariants_V2({ productId, size, color, price, stock, sku }) {
+        try {
+            const result = await this.db.query(`
+                INSERT INTO product_variants (product_id, size, color, price, stock, sku)
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+                `, [
+                productId,
+                size,
+                color,
+                price,
+                stock,
+                sku,
+            ]);
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async setProductImages_V2(productId, url, sortOrder) {
+        try {
+            const result = await this.db.query(`
+                INSERT INTO product_images (product_id, url, sort_order)
+                VALUES ($1, $2, $3) RETURNING *;
+                `, [
+                productId,
+                url,
+                sortOrder
+            ]);
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

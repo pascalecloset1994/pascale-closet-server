@@ -37,10 +37,10 @@ export class UserController {
     try {
       const { userId } = req;
       const file = req.file ?? null;
-      const { name, lastname, email, avatar, city, country, postalCode } =
+      const { name, lastname, email, avatar, city, country, postalCode, address } =
         req.body;
 
-      if (!name || !lastname || !email || !city || !postalCode)
+      if (!name || !lastname || !email || !city || !postalCode || !address)
         return res.status(400).json({ message: "Campos vacíos." });
 
       const user = await this.model.getUserById(userId);
@@ -59,8 +59,8 @@ export class UserController {
         avatar: urlImage,
         city,
         country,
+        address,
         postalCode,
-        updatedAt: user.updated_at,
       });
 
       if (!updatedUser) {
@@ -108,7 +108,10 @@ export class UserController {
       if (!user)
         return res.status(404).json({ message: "Usuario inexistente" });
 
-      return res.status(200).json({ message: "Perfil del usuario", user });
+      delete user.password;
+      delete user.ip;
+
+      return res.status(200).json(user);
     } catch (error) {
       return res
         .status(500)
