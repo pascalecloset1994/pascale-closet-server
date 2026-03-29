@@ -61,9 +61,11 @@ export class UserModel {
     async updateUser({ userId, name, lastname, email, updated, avatar, city, country, address, postalCode }) {
         try {
             const result = await this.db.query(`
+                BEGIN;
                 UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = NOW(), 
                 avatar = $6, city = $7, country = $8, address = $9, postal_code = $10 
-                WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $10 RETURNING *;
+                WHERE user_id = $1 RETURNING *;
+                COMMIT;
                 `, [
                 userId,
                 name,
