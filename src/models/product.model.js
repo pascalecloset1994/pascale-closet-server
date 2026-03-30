@@ -229,13 +229,13 @@ export class ProductModel {
         }
     }
 
-    async createProductReview({ productId, userId, raiting, comment, authorName, authorAvatar }) {
+    async createProductReview({ productId, userId, rating, comment, authorName, authorAvatar }) {
         try {
             const result = await this.db.query(`
                 INSERT INTO product_reviews (product_id, user_id, rating, comment, author_name, author_avatar)
                 VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
                 `,
-                [productId, userId, raiting, comment, authorName, authorAvatar]
+                [productId, userId, rating, comment, authorName, authorAvatar]
             );
             return this.getFirstRow(result);
         } catch (error) {

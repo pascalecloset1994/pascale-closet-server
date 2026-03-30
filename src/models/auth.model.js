@@ -28,11 +28,11 @@ export class AuthModel {
         postalCode,
     }) {
         try {
-            const result = await this.db.query(
-                `INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        ON CONFLICT (email) DO NOTHING
-        RETURNING *;`,
+            const result = await this.db.query(`
+                INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (email) DO NOTHING
+                RETURNING *;`,
                 [name, lastName, email, password, role, ip, city, country, postalCode],
             );
 
