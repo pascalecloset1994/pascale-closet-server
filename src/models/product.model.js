@@ -195,6 +195,16 @@ export class ProductModel {
         }
     }
 
+    async getAllProductReviews() {
+        try {
+            const result = await this.db.query(
+                "SELECT * FROM products_reviews;");
+            return this.getRows(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async getProductReviewsById(id) {
         try {
             const result = await this.db.query(
