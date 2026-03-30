@@ -14,7 +14,11 @@ export class ProductController {
       const reviews = await this.model.getAllProductsReviews();
 
       if (Array.isArray(products) && reviews.length > 0) {
-        products.push(...reviews)
+        reviews.map((review) => {
+          const productId = review.product_id;
+          const productReviewById = products.filter(p => p.id === productId);
+          return productReviewById.push(review);
+        })
       }
 
       return res.status(200).json(products);

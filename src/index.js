@@ -22,4 +22,6 @@ app.use(express.urlencoded({ extended: false, limit: "25mb" }));
 app.disable("x-powered-by");
 app.use(createAppRouter({ db: neonDB }));
 
+app.listen(3000, () => console.log("http://localhost:3000"))
+
 export default app;
