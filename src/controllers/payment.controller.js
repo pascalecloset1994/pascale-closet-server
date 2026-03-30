@@ -17,8 +17,8 @@ export class PaymentController {
   createPreference = async (req = request, res = response) => {
     try {
       const userId = req.userId
-      const { items, total, shipping } = req.body;
-
+      const { items, total: subTotal, shipping, shippingCost } = req.body;
+      const total = shippingCost > 0 ? subTotal : subTotal + shippingCost;
       // Primero creamos la orden en nuestra DB
       const order = await this.orderModel.createOrder({
         user_id: userId,
@@ -39,6 +39,10 @@ export class PaymentController {
           Talle: ${p.size}
           `,
         })),
+        shipments: {
+          cost: shippingCost,
+          mode: "not_specified"
+        },
         back_urls: {
           success: `${process.env.FRONT_URL}/order-confirmation/${order.order_id}`,
           failure: `${process.env.FRONT_URL}/failure`,
@@ -49,7 +53,6 @@ export class PaymentController {
           order_id: order.order_id,
           user_id: userId
         },
-        // Importante: agregar notification_url para recibir webhooks
         // El parámetro source_news=webhooks asegura que solo recibas webhooks, no IPN
         notification_url: `${process.env.BACK_URL}/payment/webhook?source_news=webhooks`,
       };
