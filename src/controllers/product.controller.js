@@ -11,19 +11,15 @@ export class ProductController {
       if (products.length === 0)
         return res.json({ message: "No hay productos en la base de datos." });
 
-      const reviews = await this.model.getAllProductsReviews();
+      const reviews = await this.model.getAllProductReviews();
 
       if (Array.isArray(products) && reviews.length > 0) {
-        reviews.map((review) => {
-          const productId = review.product_id;
-          const productReviewById = products.filter(p => p.id === productId);
-          return productReviewById.push(review);
-        })
+        products.push({ reviews });
       }
 
       return res.status(200).json(products);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener los productos." })
+      res.status(500).json({ message: "Error al obtener los productos: " + error.message })
     }
   }
 
