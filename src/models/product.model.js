@@ -208,7 +208,7 @@ export class ProductModel {
     async getProductReviewsById(id) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM products_reviews WHERE product_id = $1;",
+                "SELECT * FROM product_reviews WHERE product_id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
