@@ -194,4 +194,16 @@ export class ProductModel {
             throw error;
         }
     }
+
+    async getProductReviewsById(id) {
+        try {
+            const result = await this.db.query(
+                "SELECT * FROM products_reviews WHERE product_id = $1;",
+                [id]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

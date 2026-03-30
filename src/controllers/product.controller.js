@@ -41,6 +41,12 @@ export class ProductController {
       if (!product)
         return res.status(404).json({ message: "Producto no encontrado" });
 
+      const reviews = await this.model.getProductReviewsById(id);
+
+      if (Array.isArray(product) && reviews.length > 0) {
+        product.push(reviews);
+      }
+
       return res.status(200).json(product);
     } catch (error) {
       return res
