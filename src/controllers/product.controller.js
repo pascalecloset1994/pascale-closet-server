@@ -1,3 +1,5 @@
+import { neonDB } from "../config/dbConfig.js";
+import { UserModel } from "../models/user.models.js";
 import { deleteFromBlob } from "../services/vercelBlob.service.js";
 
 export class ProductController {
@@ -213,6 +215,27 @@ export class ProductController {
 
     } catch (error) {
 
+    }
+  }
+
+  createProductReview = async (req, res) => {
+    const { userId } = req;
+    const { id: productId } = req.params;
+    const { raiting, comment } = req.body;
+    try {
+      const result = await neonDB.query("SELECT * FROM users WHERE user_id = $1;", [userId]);
+      const user = result.rows[0]
+      const review = await this.model.createProductReview({
+        productId, userId: user.user_id,
+        raiting,
+        comment,
+        authorName: user.name + " " + user.lastname,
+        authorAvatar: user.avatar
+      });
+
+      return res.status(200).json({ review });
+    } catch (error) {
+      return res.status(500).json({ message: "Error al crear reseña: " + error.message });
     }
   }
 }

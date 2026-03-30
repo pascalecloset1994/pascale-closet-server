@@ -20,5 +20,7 @@ export const createProductsRouter = ({ db }) => {
   productsRouter.put("/product/:id", isAuth, productController.updateProduct);
   productsRouter.delete("/product/:id", isAuth, productController.deleteProduct);
 
+  productsRouter.post("/product/:id/review", isAuth, productController.createProductReview);
+
   return productsRouter;
 };
