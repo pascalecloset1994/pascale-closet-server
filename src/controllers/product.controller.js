@@ -11,7 +11,7 @@ export class ProductController {
       if (products.length === 0)
         return res.json({ message: "No hay productos en la base de datos." });
 
-      if (Array.isArray(products) && reviews.length > 0) {
+      if (Array.isArray(products)) {
         products.map(async (product) => {
           const reviews = await this.model.getProductReviewsById(product.id);
           return { ...product, reviews }
