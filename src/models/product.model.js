@@ -8,7 +8,10 @@ export class ProductModel {
 
     async getAllProducts() {
         try {
-            const result = await this.db.query("SELECT * FROM products;");
+            const result = await this.db.query(`
+                SELECT * FROM products prod
+                LEFT JOIN product_reviews ON prod.id = product_reviews.product_id
+                `);
             return this.getRows(result);
         } catch (error) {
             throw error;

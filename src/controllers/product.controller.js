@@ -8,14 +8,9 @@ export class ProductController {
   listAllProducts = async (req, res) => {
     try {
       const products = await this.model.getAllProducts();
-      if (products.length === 0)
-        return res.json({ message: "No hay productos en la base de datos." });
 
-      if (Array.isArray(products)) {
-        products.map(async (product) => {
-          const reviews = await this.model.getProductReviewsById(product.id);
-          return { ...product, reviews }
-        })
+      if (products.length === 0) {
+        return res.json({ message: "No hay productos en la base de datos." });
       }
 
       return res.status(200).json(products);
