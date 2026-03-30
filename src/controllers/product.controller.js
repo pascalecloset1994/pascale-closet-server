@@ -11,7 +11,7 @@ export class ProductController {
       if (products.length === 0)
         return res.json({ message: "No hay productos en la base de datos." });
 
-      const reviews = await this.model.getAllProductsReviews();
+      const reviews = await this.model.getAllProductReviews();
 
       if (Array.isArray(products) && reviews.length > 0) {
         products.push(reviews);
