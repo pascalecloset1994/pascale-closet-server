@@ -253,7 +253,7 @@ export class ProductController {
     const { userId } = req;
     const { id: productId } = req.params;
     try {
-      const deletedReview = await this.model.deleteProductReview(productId, userId);
+      const deletedReview = await this.model.deleteProductReview(userId, productId);
 
       if (!deletedReview) {
         return res.status(400).json({ message: "No se ha encontrado la reseña." })
