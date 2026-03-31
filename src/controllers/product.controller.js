@@ -1,4 +1,5 @@
 import { neonDB } from "../config/dbConfig.js";
+import { ProductModel } from "../models/product.model.js";
 import { UserModel } from "../models/user.models.js";
 import { deleteFromBlob } from "../services/vercelBlob.service.js";
 
@@ -244,6 +245,36 @@ export class ProductController {
     try {
       const reviews = await this.model.getProductReviewsById(productId);
       return res.status(200).json({ reviews });
+    } catch (error) {
+      return res.status(500).json({ message: "Error al obtener las reseñas: " + error.message });
+    }
+  }
+
+  updateProductReview = async (req, res) => {
+    const { userId } = req;
+    const { id: productId } = req.params;
+    const { rating, comment, authorName } = req.body;
+
+    try {
+      const currentReview = await this.model.getProductReviewsById(productId, userId);
+
+      if (!currentReview) {
+        return res.status(404).json({ message: "No se ha enontrado la reseña." })
+      }
+
+      const updatedReview = await this.model.updateProductReview({
+        productId,
+        userId,
+        rating: rating ? rating : currentReview.rating,
+        comment: comment ? comment : currentReview.comment,
+        authorName: authorName ? authorName : currentReview.author_name
+      });
+
+      if (!updatedReview) {
+        return res.status(400).json({ message: "No se ha encontrado la reseña." })
+      }
+
+      return res.status(200).json({ message: "Reseña actualizada.", review: updatedReview });
     } catch (error) {
       return res.status(500).json({ message: "Error al obtener las reseñas: " + error.message });
     }

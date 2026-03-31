@@ -217,11 +217,11 @@ export class ProductModel {
         }
     }
 
-    async getProductReviewsById(id) {
+    async getProductReviewsById(productId, userId) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM product_reviews WHERE product_id = $1;",
-                [id]
+                "SELECT * FROM product_reviews WHERE product_id = $1 AND user_id = $2;",
+                [productId, userId]
             );
             return this.getFirstRow(result);
         } catch (error) {
@@ -243,19 +243,18 @@ export class ProductModel {
         }
     }
 
-    async updateProductReview({ productId, userId, rating, comment, authorName, authorAvatar }) {
+    async updateProductReview({ productId, userId, rating, comment, authorName }) {
         try {
             await this.db.query("BEGIN;");
             const result = await this.db.query(`
                 UPDATE product_reviews SET rating = $3, 
                 comment = $4, 
                 author_name = $5, 
-                author_avatar = $6
                 WHERE product_id = $1
                 AND user_id = $2
                 RETURNING *;
                 `,
-                [productId, userId, rating, comment, authorName, authorAvatar]
+                [productId, userId, rating, comment, authorName]
             );
             await this.db.query("COMMIT;");
             return this.getFirstRow(result);

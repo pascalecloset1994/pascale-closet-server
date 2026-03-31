@@ -22,6 +22,7 @@ export const createProductsRouter = ({ db }) => {
 
   productsRouter.post("/product/:id/review", isAuth, productController.createProductReview);
   productsRouter.delete("/product/:id/review", isAuth, productController.deleteProductReview);
+  productsRouter.patch("/product/:id/review", isAuth, productController.updateProductReview);
 
   return productsRouter;
 };
