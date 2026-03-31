@@ -250,6 +250,8 @@ export class ProductModel {
                 UPDATE product_reviews SET rating = $3, 
                 comment = $4, 
                 author_name = $5
+                updated_at = NOW(),
+                updated = TRUE,
                 WHERE product_id = $1
                 AND user_id = $2
                 RETURNING *;
