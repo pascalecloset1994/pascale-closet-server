@@ -21,6 +21,7 @@ export const createProductsRouter = ({ db }) => {
   productsRouter.delete("/product/:id", isAuth, productController.deleteProduct);
 
   productsRouter.post("/product/:id/review", isAuth, productController.createProductReview);
+  productsRouter.delete("/product/:id/review", isAuth, productController.deleteProductReview);
 
   return productsRouter;
 };

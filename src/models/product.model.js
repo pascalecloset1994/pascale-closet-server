@@ -242,4 +242,38 @@ export class ProductModel {
             throw error;
         }
     }
+
+    async updateProductReview({ productId, userId, rating, comment, authorName, authorAvatar }) {
+        try {
+            await this.db.query("BEGIN;");
+            const result = await this.db.query(`
+                UPDATE product_reviews SET rating = $3, 
+                comment = $4, 
+                author_name = $5, 
+                author_avatar = $6
+                WHERE product_id = $1
+                AND user_id = $2
+                RETURNING *;
+                `,
+                [productId, userId, rating, comment, authorName, authorAvatar]
+            );
+            await this.db.query("COMMIT;");
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteProductReview(userId, productId) {
+        try {
+            const result = await this.db.query(`
+                DELETE FROM product_reviews WHERE user_id = $1 AND product_id = $2;
+                `,
+                [userId, productId]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
 }

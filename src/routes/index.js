@@ -4,8 +4,6 @@ import { createAuthRouter } from "./auth.routes.js";
 import { createUserRouter } from "./user.routes.js";
 import { createPaymentRouter } from "./payment.routes.js";
 import { createOrderRouter } from "./order.routes.js";
-import { neonDB } from "../config/dbConfig.js";
-import { UserModel } from "../models/user.models.js";
 
 export const createAppRouter = ({ db }) => {
    const appRouter = Router();

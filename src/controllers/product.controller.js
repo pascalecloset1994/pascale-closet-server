@@ -238,4 +238,30 @@ export class ProductController {
       return res.status(500).json({ message: "Error al crear reseña: " + error.message });
     }
   }
+
+  getProductReviewsById = async (req, res) => {
+    const productId = req.params;
+    try {
+      const reviews = await this.model.getProductReviewsById(productId);
+      return res.status(200).json({ reviews });
+    } catch (error) {
+      return res.status(500).json({ message: "Error al obtener las reseñas: " + error.message });
+    }
+  }
+
+  deleteProductReview = async (req, res) => {
+    const { userId } = req;
+    const { id: productId } = req.params;
+    try {
+      const deletedReview = await this.model.deleteProductReview(productId, userId);
+
+      if (!deletedReview) {
+        return res.status(400).json({ message: "No se ha encontrado la reseña." })
+      }
+
+      return res.status(200).json({ message: "Reseña eliminada." });
+    } catch (error) {
+      return res.status(500).json({ message: "Error al obtener las reseñas: " + error.message });
+    }
+  }
 }

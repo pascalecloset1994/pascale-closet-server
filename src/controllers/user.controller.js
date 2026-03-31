@@ -317,14 +317,4 @@ export class UserController {
       return res.status(500).json({ message: error.message });
     }
   };
-
-  getProductReviewsById = async (req, res) => {
-    const productId = req.params;
-    try {
-      const reviews = await this.model.getProductReviewsById(productId);
-      return res.status(200).json({ reviews });
-    } catch (error) {
-      return res.status(500).json({ message: "Error al obtener las reseñas: " + error.message });
-    }
-  }
 }
