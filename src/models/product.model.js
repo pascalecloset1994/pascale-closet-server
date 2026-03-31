@@ -259,6 +259,7 @@ export class ProductModel {
             await this.db.query("COMMIT;");
             return this.getFirstRow(result);
         } catch (error) {
+            await this.db.query("ROLLBACK;");
             throw error;
         }
     }
