@@ -267,7 +267,7 @@ export class ProductModel {
     async deleteProductReview(userId, productId) {
         try {
             const result = await this.db.query(`
-                DELETE FROM product_reviews WHERE user_id = $1 AND product_id = $2;
+                DELETE FROM product_reviews WHERE user_id = $1 AND product_id = $2 RETURNING *;
                 `,
                 [userId, productId]
             );
