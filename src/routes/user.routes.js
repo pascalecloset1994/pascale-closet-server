@@ -22,6 +22,7 @@ export const createUserRouter = ({ db }) => {
   // =========================
   // PERFIL (privado)
   // =========================
+  userRouter.get("/all-users", isAuth, userController.getAllUsers);
   userRouter.get("/profile", isAuth, userController.userProfile);
   userRouter.get("/:id", isAuth, userController.getUserById);
 

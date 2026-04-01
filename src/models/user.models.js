@@ -8,7 +8,11 @@ export class UserModel {
 
     async getAllUsers() {
         try {
-            const result = await this.db.query("SELECT * FROM users;")
+            const result = await this.db.query(`
+                SELECT name, lastname, email, avatar, role,
+                city, state, country, postal_code, address,
+                FROM users;
+                `)
             const users = this.getRows(result);
             return users;
         } catch (error) {
