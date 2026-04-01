@@ -256,7 +256,7 @@ export class ProductController {
     const { rating, comment, authorName, active, buyerId } = req.body;
 
     try {
-      const currentReview = await this.model.getProductReviewsById(productId, buyerId ?? userId);
+      const currentReview = await this.model.getProductReviewsById(productId, buyerId !== "" || null ? buyerId : userId);
 
       if (!currentReview) {
         return res.status(404).json({ message: "No se ha enontrado la reseña." })
