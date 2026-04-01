@@ -253,7 +253,7 @@ export class ProductController {
   updateProductReview = async (req, res) => {
     const { userId } = req;
     const { id: productId } = req.params;
-    const { rating, comment, authorName } = req.body;
+    const { rating, comment, authorName, active } = req.body;
 
     try {
       const currentReview = await this.model.getProductReviewsById(productId, userId);
@@ -267,7 +267,8 @@ export class ProductController {
         userId,
         rating: rating ? rating : currentReview.rating,
         comment: comment ? comment : currentReview.comment,
-        authorName: authorName ? authorName : currentReview.author_name
+        authorName: authorName ? authorName : currentReview.author_name,
+        active
       });
 
       if (!updatedReview) {

@@ -243,20 +243,21 @@ export class ProductModel {
         }
     }
 
-    async updateProductReview({ productId, userId, rating, comment, authorName }) {
+    async updateProductReview({ productId, userId, rating, comment, authorName, active }) {
         try {
             await this.db.query("BEGIN;");
             const result = await this.db.query(`
                 UPDATE product_reviews SET rating = $3, 
                 comment = $4, 
                 author_name = $5,
+                active = $6,
                 updated_at = NOW(),
                 updated = TRUE
                 WHERE product_id = $1
                 AND user_id = $2
                 RETURNING *;
                 `,
-                [productId, userId, rating, comment, authorName]
+                [productId, userId, rating, comment, authorName, active]
             );
             await this.db.query("COMMIT;");
             return this.getFirstRow(result);
