@@ -213,6 +213,64 @@ export class ProductController {
     }
   };
 
+  updateProduct_V2 = async (req, res) => {
+    const { productId } = req.params;
+    const { name, description, brand, category, season, condition } = req.body;
+
+    if (!productId) {
+      return res.status(400).json({ message: "Falta productId en la ruta." });
+    }
+
+    try {
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const updatedProduct = await this.model.updateProduct_V2({
+        id: productId,
+        name: name ?? currentProduct.name,
+        description: description ?? currentProduct.description,
+        brand: brand ?? currentProduct.brand,
+        category: category ?? currentProduct.category,
+        season: season ?? currentProduct.season,
+        condition: condition ?? currentProduct.condition,
+      });
+
+      return res.status(200).json({ product: updatedProduct });
+    } catch (error) {
+      console.error("[updateProduct_V2]", error);
+      return res.status(500).json({ message: "Error al actualizar el producto (V2): " + error.message });
+    }
+  }
+
+  deleteProduct_V2 = async (req, res) => {
+    const { productId } = req.params;
+
+    if (!productId) {
+      return res.status(400).json({ message: "Falta productId en la ruta." });
+    }
+
+    try {
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const deletedProduct = await this.model.deleteProduct_V2(productId);
+
+      return res.status(200).json({
+        message: "Producto V2 eliminado correctamente.",
+        product: deletedProduct,
+      });
+    } catch (error) {
+      console.error("[deleteProduct_V2]", error);
+      return res.status(500).json({ message: "Error al eliminar el producto (V2): " + error.message });
+    }
+  }
+
   setProductVariants_V2 = async (req, res) => {
     try {
       const { productId } = req.params;
@@ -256,6 +314,84 @@ export class ProductController {
     } catch (error) {
       console.error("[setProductVariants_V2]", error);
       return res.status(500).json({ message: "Error al crear variantes (V2): " + error.message });
+    }
+  }
+
+  updateProductVariant_V2 = async (req, res) => {
+    const { productId, variantId } = req.params;
+    const { size, color, price, stock, sku } = req.body;
+
+    if (!productId || !variantId) {
+      return res.status(400).json({ message: "Faltan productId o variantId en la ruta." });
+    }
+
+    try {
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const currentVariant = await this.model.getProductVariantById_V2({ productId, variantId });
+
+      if (!currentVariant) {
+        return res.status(404).json({ message: "Variante no encontrada para este producto." });
+      }
+
+      const nextPrice = price ?? currentVariant.price;
+      const nextStock = stock ?? currentVariant.stock;
+
+      if (nextPrice === undefined || nextStock === undefined) {
+        return res.status(400).json({ message: "La variante debe tener price y stock." });
+      }
+
+      const updatedVariant = await this.model.updateProductVariant_V2({
+        productId,
+        variantId,
+        size: size ?? currentVariant.size,
+        color: color ?? currentVariant.color,
+        price: nextPrice,
+        stock: nextStock,
+        sku: sku ?? currentVariant.sku,
+      });
+
+      return res.status(200).json({
+        productId: currentProduct.id,
+        variant: updatedVariant,
+      });
+    } catch (error) {
+      console.error("[updateProductVariant_V2]", error);
+      return res.status(500).json({ message: "Error al actualizar variante (V2): " + error.message });
+    }
+  }
+
+  deleteProductVariant_V2 = async (req, res) => {
+    const { productId, variantId } = req.params;
+
+    if (!productId || !variantId) {
+      return res.status(400).json({ message: "Faltan productId o variantId en la ruta." });
+    }
+
+    try {
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const deletedVariant = await this.model.deleteProductVariant_V2({ productId, variantId });
+
+      if (!deletedVariant) {
+        return res.status(404).json({ message: "Variante no encontrada para este producto." });
+      }
+
+      return res.status(200).json({
+        message: "Variante eliminada correctamente.",
+        variant: deletedVariant,
+      });
+    } catch (error) {
+      console.error("[deleteProductVariant_V2]", error);
+      return res.status(500).json({ message: "Error al eliminar variante (V2): " + error.message });
     }
   }
 
@@ -311,6 +447,80 @@ export class ProductController {
     } catch (error) {
       console.error("[setProductImages_V2]", error);
       return res.status(500).json({ message: "Error al crear imágenes (V2): " + error.message });
+    }
+  }
+
+  updateProductImage_V2 = async (req, res) => {
+    const { productId, imageId } = req.params;
+    const { imageUrl, url, sortOrder } = req.body;
+
+    if (!productId || !imageId) {
+      return res.status(400).json({ message: "Faltan productId o imageId en la ruta." });
+    }
+
+    try {
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const currentImage = await this.model.getProductImageById_V2({ productId, imageId });
+
+      if (!currentImage) {
+        return res.status(404).json({ message: "Imagen no encontrada para este producto." });
+      }
+
+      const nextUrl = (imageUrl ?? url ?? currentImage.url);
+
+      if (typeof nextUrl !== "string" || nextUrl.trim() === "") {
+        return res.status(400).json({ message: "Debes enviar imageUrl/url válido." });
+      }
+
+      const updatedImage = await this.model.updateProductImage_V2({
+        productId,
+        imageId,
+        url: nextUrl.trim(),
+        sortOrder: sortOrder ?? currentImage.sort_order,
+      });
+
+      return res.status(200).json({
+        productId: currentProduct.id,
+        image: updatedImage,
+      });
+    } catch (error) {
+      console.error("[updateProductImage_V2]", error);
+      return res.status(500).json({ message: "Error al actualizar imagen (V2): " + error.message });
+    }
+  }
+
+  deleteProductImage_V2 = async (req, res) => {
+    const { productId, imageId } = req.params;
+
+    if (!productId || !imageId) {
+      return res.status(400).json({ message: "Faltan productId o imageId en la ruta." });
+    }
+
+    try {
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const deletedImage = await this.model.deleteProductImage_V2({ productId, imageId });
+
+      if (!deletedImage) {
+        return res.status(404).json({ message: "Imagen no encontrada para este producto." });
+      }
+
+      return res.status(200).json({
+        message: "Imagen eliminada correctamente.",
+        image: deletedImage,
+      });
+    } catch (error) {
+      console.error("[deleteProductImage_V2]", error);
+      return res.status(500).json({ message: "Error al eliminar imagen (V2): " + error.message });
     }
   }
 

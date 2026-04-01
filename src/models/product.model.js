@@ -184,6 +184,46 @@ export class ProductModel {
         }
     }
 
+    async updateProduct_V2({ id, name, description, brand, category, season, condition }) {
+        try {
+            const result = await this.db.query(`
+                UPDATE products_v2
+                SET name = $2,
+                    description = $3,
+                    brand = $4,
+                    category = $5,
+                    season = $6,
+                    condition = $7
+                WHERE id = $1
+                RETURNING *;
+                `, [
+                id,
+                name,
+                description,
+                brand,
+                category,
+                season,
+                condition,
+            ]);
+
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteProduct_V2(id) {
+        try {
+            const result = await this.db.query(
+                "DELETE FROM products_v2 WHERE id = $1 RETURNING *;",
+                [id]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async setProductVariants_V2({ productId, size, color, price, stock, sku }) {
         try {
             const result = await this.db.query(`
@@ -233,6 +273,56 @@ export class ProductModel {
         }
     }
 
+    async getProductVariantById_V2({ productId, variantId }) {
+        try {
+            const result = await this.db.query(
+                "SELECT * FROM product_variants WHERE id = $1 AND product_id = $2;",
+                [variantId, productId]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateProductVariant_V2({ productId, variantId, size, color, price, stock, sku }) {
+        try {
+            const result = await this.db.query(`
+                UPDATE product_variants
+                SET size = $3,
+                    color = $4,
+                    price = $5,
+                    stock = $6,
+                    sku = $7
+                WHERE id = $1 AND product_id = $2
+                RETURNING *;
+                `, [
+                variantId,
+                productId,
+                size,
+                color,
+                price,
+                stock,
+                sku,
+            ]);
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteProductVariant_V2({ productId, variantId }) {
+        try {
+            const result = await this.db.query(
+                "DELETE FROM product_variants WHERE id = $1 AND product_id = $2 RETURNING *;",
+                [variantId, productId]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async setProductImages_V2(productId, url, sortOrder) {
         try {
             const result = await this.db.query(`
@@ -274,6 +364,50 @@ export class ProductModel {
             return createdImages;
         } catch (error) {
             await this.db.query("ROLLBACK;");
+            throw error;
+        }
+    }
+
+    async getProductImageById_V2({ productId, imageId }) {
+        try {
+            const result = await this.db.query(
+                "SELECT * FROM product_images WHERE id = $1 AND product_id = $2;",
+                [imageId, productId]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async updateProductImage_V2({ productId, imageId, url, sortOrder }) {
+        try {
+            const result = await this.db.query(`
+                UPDATE product_images
+                SET url = $3,
+                    sort_order = $4
+                WHERE id = $1 AND product_id = $2
+                RETURNING *;
+                `, [
+                imageId,
+                productId,
+                url,
+                sortOrder,
+            ]);
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async deleteProductImage_V2({ productId, imageId }) {
+        try {
+            const result = await this.db.query(
+                "DELETE FROM product_images WHERE id = $1 AND product_id = $2 RETURNING *;",
+                [imageId, productId]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
             throw error;
         }
     }
