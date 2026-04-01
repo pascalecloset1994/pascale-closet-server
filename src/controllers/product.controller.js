@@ -251,12 +251,11 @@ export class ProductController {
   }
 
   updateProductReview = async (req, res) => {
-    const { userId } = req;
     const { id: productId } = req.params;
-    const { rating, comment, authorName, active, buyerId } = req.body;
+    const { rating, comment, authorName, active, userId } = req.body;
 
     try {
-      const currentReview = await this.model.getProductReviewsById(productId, buyerId !== "" || null ? buyerId : userId);
+      const currentReview = await this.model.getProductReviewsById(productId, userId);
 
       if (!currentReview) {
         return res.status(404).json({ message: "No se ha enontrado la reseña." })
