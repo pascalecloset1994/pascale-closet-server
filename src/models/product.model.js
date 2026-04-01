@@ -152,6 +152,18 @@ export class ProductModel {
         }
     }
 
+    async getProductById_V2(id) {
+        try {
+            const result = await this.db.query(
+                "SELECT * FROM products_v2 WHERE id = $1;",
+                [id]
+            );
+            return this.getFirstRow(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async createProduct_V2({ userId, name, description, brand, category, season, condition }) {
         try {
             const result = await this.db.query(`
@@ -191,6 +203,36 @@ export class ProductModel {
         }
     }
 
+    async createProductVariants_V2({ productId, variants }) {
+        try {
+            await this.db.query("BEGIN;");
+
+            const createdVariants = [];
+
+            for (const variant of variants) {
+                const result = await this.db.query(`
+                    INSERT INTO product_variants (product_id, size, color, price, stock, sku)
+                    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+                    `, [
+                    productId,
+                    variant.size ?? null,
+                    variant.color ?? null,
+                    variant.price,
+                    variant.stock,
+                    variant.sku ?? null,
+                ]);
+
+                createdVariants.push(this.getFirstRow(result));
+            }
+
+            await this.db.query("COMMIT;");
+            return createdVariants;
+        } catch (error) {
+            await this.db.query("ROLLBACK;");
+            throw error;
+        }
+    }
+
     async setProductImages_V2(productId, url, sortOrder) {
         try {
             const result = await this.db.query(`
@@ -203,6 +245,35 @@ export class ProductModel {
             ]);
             return this.getFirstRow(result);
         } catch (error) {
+            throw error;
+        }
+    }
+
+    async createProductImages_V2({ productId, images }) {
+        try {
+            await this.db.query("BEGIN;");
+
+            const createdImages = [];
+
+            for (let index = 0; index < images.length; index++) {
+                const image = images[index];
+
+                const result = await this.db.query(`
+                    INSERT INTO product_images (product_id, url, sort_order)
+                    VALUES ($1, $2, $3) RETURNING *;
+                    `, [
+                    productId,
+                    image.url,
+                    image.sortOrder ?? index,
+                ]);
+
+                createdImages.push(this.getFirstRow(result));
+            }
+
+            await this.db.query("COMMIT;");
+            return createdImages;
+        } catch (error) {
+            await this.db.query("ROLLBACK;");
             throw error;
         }
     }

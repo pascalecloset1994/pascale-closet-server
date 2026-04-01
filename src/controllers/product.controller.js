@@ -188,23 +188,25 @@ export class ProductController {
   // ---- Products_V2 -----------------------------------------------------------
 
   createProduct_V2 = async (req, res) => {
+    const authUserId = req.userId;
     const {
       userId, name, description, brand, category, season, condition
     } = req.body;
 
-    if (!userId || !name) {
+    const ownerId = authUserId ?? userId;
+
+    if (!ownerId || !name) {
       return res.status(400).json({ message: "Faltan campos requeridos: userId, name" });
     }
 
     try {
       const newProduct = await this.model.createProduct_V2({
-        userId, name, description, brand, category, season, condition
+        userId: ownerId, name, description, brand, category, season, condition
       });
 
       return res.status(201).json({
         product: { ...newProduct }
       });
-
     } catch (error) {
       console.error("[createProduct_V2]", error);
       return res.status(500).json({ message: "Error al crear el producto (V2): " + error.message });
@@ -213,9 +215,102 @@ export class ProductController {
 
   setProductVariants_V2 = async (req, res) => {
     try {
+      const { productId } = req.params;
+      const { variants, size, color, price, stock, sku } = req.body;
 
+      if (!productId) {
+        return res.status(400).json({ message: "Falta productId en la ruta." });
+      }
+
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const normalizedVariants = Array.isArray(variants)
+        ? variants
+        : [{ size, color, price, stock, sku }];
+
+      if (!normalizedVariants.length) {
+        return res.status(400).json({ message: "Debes enviar al menos una variante." });
+      }
+
+      const hasInvalidVariant = normalizedVariants.some((variant) =>
+        variant.price === undefined || variant.stock === undefined
+      );
+
+      if (hasInvalidVariant) {
+        return res.status(400).json({ message: "Cada variante requiere price y stock." });
+      }
+
+      const createdVariants = await this.model.createProductVariants_V2({
+        productId,
+        variants: normalizedVariants,
+      });
+
+      return res.status(201).json({
+        productId: currentProduct.id,
+        variants: createdVariants,
+      });
     } catch (error) {
+      console.error("[setProductVariants_V2]", error);
+      return res.status(500).json({ message: "Error al crear variantes (V2): " + error.message });
+    }
+  }
 
+  setProductImages_V2 = async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { imageUrls, urls } = req.body;
+
+      if (!productId) {
+        return res.status(400).json({ message: "Falta productId en la ruta." });
+      }
+
+      const currentProduct = await this.model.getProductById_V2(productId);
+
+      if (!currentProduct) {
+        return res.status(404).json({ message: "Producto V2 no encontrado." });
+      }
+
+      const rawUrls = Array.isArray(req.body)
+        ? req.body
+        : Array.isArray(imageUrls)
+          ? imageUrls
+          : Array.isArray(urls)
+            ? urls
+            : [];
+
+      const normalizedImages = rawUrls.map((currentUrl, index) => ({
+        url: typeof currentUrl === "string" ? currentUrl.trim() : currentUrl,
+        sortOrder: index,
+      }));
+
+      if (!normalizedImages.length) {
+        return res.status(400).json({ message: "Debes enviar imageUrls (string[]) con al menos una URL." });
+      }
+
+      const hasInvalidImage = normalizedImages.some((image) =>
+        typeof image.url !== "string" || image.url.trim() === ""
+      );
+
+      if (hasInvalidImage) {
+        return res.status(400).json({ message: "Cada imagen requiere url." });
+      }
+
+      const createdImages = await this.model.createProductImages_V2({
+        productId,
+        images: normalizedImages,
+      });
+
+      return res.status(201).json({
+        productId: currentProduct.id,
+        images: createdImages,
+      });
+    } catch (error) {
+      console.error("[setProductImages_V2]", error);
+      return res.status(500).json({ message: "Error al crear imágenes (V2): " + error.message });
     }
   }
 
