@@ -10,7 +10,7 @@ export class ProductController {
 
   listAllProducts = async (req, res) => {
     try {
-      const products = await this.model.getAllProducts();
+      const products = await this.model.getPublicProductsV2();
 
       if (products.length === 0) {
         return res.json({ message: "No hay productos en la base de datos." });

@@ -27,6 +27,33 @@ export class ProductModel {
         }
     }
 
+    async getPublicProductsV2() {
+        try {
+            const result = await this.db.query(`
+                SELECT
+                    p.*,
+                    COALESCE(v.variants, '[]'::json) AS variants,
+                    COALESCE(i.images, '[]'::json) AS images
+                FROM products_v2 p
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pv ORDER BY pv.id) AS variants
+                    FROM product_variants pv
+                    WHERE pv.product_id = p.id
+                ) v ON TRUE
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pi ORDER BY pi.sort_order, pi.id) AS images
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                ) i ON TRUE
+                ORDER BY p.id DESC;
+            `);
+
+            return this.getRows(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async getAllProductsByUserId(userId) {
         try {
             const result = await this.db.query(
