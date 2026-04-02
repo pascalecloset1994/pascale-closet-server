@@ -12,7 +12,8 @@ export class ProductModel {
                 SELECT
                     p.*,
                     COALESCE(v.variants, '[]'::json) AS variants,
-                    COALESCE(i.images, '[]'::json) AS images
+                    COALESCE(i.images, '[]'::json) AS images,
+                    COALESCE(r.reviews, '[]'::json) AS reviews
                 FROM products_v2 p
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pv ORDER BY pv.id) AS variants
@@ -24,6 +25,11 @@ export class ProductModel {
                     FROM product_images pi
                     WHERE pi.product_id = p.id
                 ) i ON TRUE
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pr ORDER BY pr.created_at DESC, pr.id DESC) AS reviews
+                    FROM product_reviews pr
+                    WHERE pr.product_id = p.id
+                ) r ON TRUE
                 ORDER BY p.id DESC;
             `);
 
