@@ -6,27 +6,6 @@ export class ProductModel {
     getFirstRow = (result) => result?.rows?.[0] || result?.[0];
     getRows = (result) => result?.rows || result || [];
 
-    async getAllProducts() {
-        try {
-            const result = await this.db.query(`
-                SELECT 
-                prod.*,
-                COALESCE(
-                    json_agg(product_reviews) 
-                    FILTER (WHERE product_reviews.id IS NOT NULL),
-                    '[]'
-                ) AS reviews
-                FROM products prod
-                LEFT JOIN product_reviews 
-                ON prod.id = product_reviews.product_id
-                GROUP BY prod.id;
-                `);
-            return this.getRows(result);
-        } catch (error) {
-            throw error;
-        }
-    }
-
     async getPublicProductsV2() {
         try {
             const result = await this.db.query(`
@@ -54,114 +33,55 @@ export class ProductModel {
         }
     }
 
-    async getAllProductsByUserId(userId) {
+    async getAllProductsByUserId_V2(userId) {
         try {
-            const result = await this.db.query(
-                "SELECT * FROM products WHERE user_id = $1;",
-                [userId],
-            );
+            const result = await this.db.query(`
+                SELECT
+                    p.*,
+                    COALESCE(v.variants, '[]'::json) AS variants,
+                    COALESCE(i.images, '[]'::json) AS images
+                FROM products_v2 p
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pv ORDER BY pv.id) AS variants
+                    FROM product_variants pv
+                    WHERE pv.product_id = p.id
+                ) v ON TRUE
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pi ORDER BY pi.sort_order, pi.id) AS images
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                ) i ON TRUE
+                WHERE p.user_id = $1
+                ORDER BY p.id DESC;
+            `, [userId]);
+
             return this.getRows(result);
         } catch (error) {
             throw error;
         }
     }
 
-    async getProductById(id) {
+    async getProductByIdWithRelations_V2(productId) {
         try {
-            const result = await this.db.query("SELECT * FROM products WHERE id = $1;", [
-                id,
-            ]);
-            return this.getFirstRow(result);
-        } catch (error) {
-            throw error;
-        }
-    }
+            const result = await this.db.query(`
+                SELECT
+                    p.*,
+                    COALESCE(v.variants, '[]'::json) AS variants,
+                    COALESCE(i.images, '[]'::json) AS images
+                FROM products_v2 p
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pv ORDER BY pv.id) AS variants
+                    FROM product_variants pv
+                    WHERE pv.product_id = p.id
+                ) v ON TRUE
+                LEFT JOIN LATERAL (
+                    SELECT json_agg(pi ORDER BY pi.sort_order, pi.id) AS images
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                ) i ON TRUE
+                WHERE p.id = $1;
+            `, [productId]);
 
-    async createProduct({
-        name,
-        price,
-        stock,
-        condition,
-        image,
-        description,
-        brand,
-        season,
-        size,
-        color,
-        category,
-        user_id,
-    }) {
-        try {
-            const result = await this.db.query(
-                `INSERT INTO products (name, price, stock, condition, image, description, brand, season, size, color, category, user_id)
-				VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;`,
-                [
-                    name,
-                    price,
-                    stock,
-                    condition,
-                    image,
-                    description,
-                    brand,
-                    season,
-                    size,
-                    color,
-                    category,
-                    user_id,
-                ],
-            );
-
-            return this.getFirstRow(result);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async updateProduct({
-        id,
-        name,
-        description,
-        category,
-        price,
-        stock,
-        condition,
-        image,
-        brand,
-        seaosn,
-        size,
-        color,
-    }) {
-        try {
-            const result = await this.db.query(
-                "UPDATE products SET name = $1, description = $2, category = $3, price = $4, stock = $5, condition = $6, image = $7, brand = $8, season = $9, size = $10, color = $11 WHERE id = $12 RETURNING *;",
-                [
-                    name,
-                    description,
-                    category,
-                    price,
-                    stock,
-                    condition,
-                    image,
-                    brand,
-                    seaosn,
-                    size,
-                    color,
-                    id,
-                ],
-            );
-
-            return this.getFirstRow(result);
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async deleteProduct(id) {
-        try {
-            const result = await this.db.query(
-                "DELETE FROM products WHERE id = $1 RETURNING *;",
-                [id],
-            );
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -449,7 +369,19 @@ export class ProductModel {
         }
     }
 
-    async getProductReviewsById(productId, userId) {
+    async getProductReviewsByProductId(productId) {
+        try {
+            const result = await this.db.query(
+                "SELECT * FROM product_reviews WHERE product_id = $1 ORDER BY created_at DESC;",
+                [productId]
+            );
+            return this.getRows(result);
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getProductReviewByUser(productId, userId) {
         try {
             const result = await this.db.query(
                 "SELECT * FROM product_reviews WHERE product_id = $1 AND user_id = $2;",

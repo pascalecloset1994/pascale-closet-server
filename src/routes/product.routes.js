@@ -10,7 +10,7 @@ export const createProductsRouter = ({ db }) => {
 
   productsRouter.get("/list-products", productController.listAllProducts);
   productsRouter.get("/products", isAuth, productController.getAllProductsByUserId);
-  productsRouter.get("/product/:id", isAuth, productController.getProductById);
+  productsRouter.get("/product-v2/:productId", isAuth, productController.getProductById);
 
   productsRouter.post("/product-v2", isAuth, productController.createProduct_V2);
   productsRouter.patch("/product-v2/:productId", isAuth, productController.updateProduct_V2);
@@ -24,14 +24,9 @@ export const createProductsRouter = ({ db }) => {
   productsRouter.patch("/product-v2/:productId/images/:imageId", isAuth, productController.updateProductImage_V2);
   productsRouter.delete("/product-v2/:productId/images/:imageId", isAuth, productController.deleteProductImage_V2);
 
-  // POST y PUT reciben application/json — las imágenes ya están en Vercel Blob
-  productsRouter.post("/product", isAuth, productController.createProduct);
-  productsRouter.put("/product/:id", isAuth, productController.updateProduct);
-  productsRouter.delete("/product/:id", isAuth, productController.deleteProduct);
-
-  productsRouter.post("/product/:id/review", isAuth, productController.createProductReview);
-  productsRouter.delete("/product/:id/review", isAuth, productController.deleteProductReview);
-  productsRouter.patch("/product/:id/review", isAuth, productController.updateProductReview);
+  productsRouter.post("/product-v2/:productId/review", isAuth, productController.createProductReview);
+  productsRouter.delete("/product-v2/:productId/review", isAuth, productController.deleteProductReview);
+  productsRouter.patch("/product-v2/:productId/review", isAuth, productController.updateProductReview);
 
   return productsRouter;
 };
