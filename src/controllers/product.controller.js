@@ -1,5 +1,4 @@
 import { neonDB } from "../config/dbConfig.js";
-import { ProductModel } from "../models/product.model.js";
 
 export class ProductController {
   constructor({ model }) {
