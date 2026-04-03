@@ -358,18 +358,19 @@ export class UserModel {
 
     // ─── Shipping V2 ─────────────────────────────────────────────────────────────
 
-    async updateShippingContent_V2({ id, shippingPrice, shippingUpdated }) {
+    async updateShippingContent_V2({ id, shippingPrice, shippingCost, shippingUpdated }) {
         try {
             const result = await this.db.query(
                 `UPDATE user_content_v2
                     SET shipping = shipping || jsonb_build_object(
                         'price',      $2::numeric,
-                        'updated',     $3::boolean,
+                        'shipping_cost', $3::numeric,
+                        'updated',     $4::boolean,
                         'updated_at', NOW()::text
                     )
                     WHERE id = $1
                     RETURNING shipping;`,
-                [id, shippingPrice, shippingUpdated]
+                [id, shippingPrice, shippingCost, shippingUpdated]
             );
             return this.getFirstRow(result);
         } catch (error) {

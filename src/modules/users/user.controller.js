@@ -268,7 +268,7 @@ export class UserController {
 
   updateShippingContent_V2 = async (req, res) => {
     try {
-      const { shippingPrice, shippingUpdate } = req.body;
+      const { shippingPrice, shippingCost, shippingUpdate } = req.body;
 
       if (shippingPrice === undefined) {
         return res.status(400).json({ message: "Faltan datos del formulario." });
@@ -277,6 +277,7 @@ export class UserController {
       const shipping = await this.model.updateShippingContent_V2({
         id: 1,
         shippingPrice,
+        shippingCost,
         shippingUpdate: shippingUpdate ?? true,
       });
 
