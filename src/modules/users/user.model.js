@@ -11,7 +11,7 @@ export class UserModel {
             const result = await this.db.query(`
                 SELECT name, lastname, email, avatar, role,
                 city, state, country, postal_code, address
-                FROM users;
+                FROM auth.users;
                 `)
             const users = this.getRows(result);
             return users;
@@ -22,7 +22,10 @@ export class UserModel {
 
     async getUserById(userId) {
         try {
-            const result = await this.db.query("SELECT * FROM users WHERE user_id = $1;", [userId]);
+            const result = await this.db.query(
+                "SELECT user_id, name, lastname, email, role, avatar, city, state, country, postal_code, address, phone, created_at, updated_at FROM auth.users WHERE user_id = $1;",
+                [userId]
+            );
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -31,7 +34,10 @@ export class UserModel {
 
     async getUserByEmail(email) {
         try {
-            const result = await this.db.query("SELECT * FROM users WHERE email = $1;", [email]);
+            const result = await this.db.query(
+                "SELECT user_id, name, lastname, email, password, role, avatar, city, state, country, postal_code, address, phone FROM auth.users WHERE email = $1;",
+                [email]
+            );
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -42,10 +48,10 @@ export class UserModel {
         try {
             const result = await this.db.query(
                 `
-                INSERT INTO users (name, lastname, email, password, role, ip, city, country, postal_code)
+                INSERT INTO auth.users (name, lastname, email, password, role, ip, city, country, postal_code)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 ON CONFLICT (email) DO NOTHING
-                RETURNING *;`, [
+                RETURNING user_id, name, email, role;`, [
                 name,
                 lastname,
                 email,
@@ -63,13 +69,14 @@ export class UserModel {
     }
 
     async updateUser({ userId, name, lastname, email, updated, avatar, city, country, address, postalCode }) {
+        const client = await this.db.connect();
         try {
-            await this.db.query("BEGIN");
-            const result = await this.db.query(`
-                UPDATE users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = NOW(), 
+            await client.query("BEGIN");
+            const result = await client.query(`
+                UPDATE auth.users SET name = $2, lastname = $3, email = $4, updated = $5, updated_at = NOW(),
                 avatar = $6, city = $7, country = $8, address = $9, postal_code = $10 
-                WHERE user_id = $1 RETURNING *;
-                `, [
+                WHERE user_id = $1 RETURNING user_id, updated_at;
+            `, [
                 userId,
                 name,
                 lastname,
@@ -81,21 +88,22 @@ export class UserModel {
                 address,
                 postalCode,
             ]);
-            await this.db.query("COMMIT;")
+            await client.query("COMMIT;");
             return this.getFirstRow(result);
         } catch (error) {
+            await client.query("ROLLBACK;");
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     async updatePartialUser({ userId, address, phone, state, updated, updatedAt }) {
         try {
             const result = await this.db.query(`
-                BEGIN;
-                UPDATE users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = NOW() 
-                WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $6 RETURNING *;
-                COMMIT;
-                `, [
+                UPDATE auth.users SET address = $2, phone = $3, state = $4, updated = $5, updated_at = NOW() 
+                WHERE user_id = $1 AND updated_at IS NOT DISTINCT FROM $6 RETURNING user_id, updated_at;
+            `, [
                 userId,
                 address,
                 phone,
@@ -112,9 +120,7 @@ export class UserModel {
     async updateUserPassword({ userId, password, updated }) {
         try {
             const result = await this.db.query(`
-                BEGIN;
-                UPDATE users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1;
-                COMMIT;
+                UPDATE auth.users SET password = $2, updated = $3, updated_at = NOW() WHERE user_id = $1 RETURNING user_id;
                 `, [
                 userId,
                 password,
@@ -128,7 +134,7 @@ export class UserModel {
 
     async deleteUser(userId) {
         try {
-            const result = await this.db.query("DELETE FROM users WHERE user_id = $1 RETURNING *;", [userId]);
+            const result = await this.db.query("DELETE FROM auth.users WHERE user_id = $1 RETURNING user_id;", [userId]);
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -137,7 +143,7 @@ export class UserModel {
 
     async getUserHero(id) {
         try {
-            const result = await this.db.query("SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM user_content WHERE id = $1;", [id])
+            const result = await this.db.query("SELECT hero_collection, hero_title, hero_subtitle, hero_url_image, hero_updated, hero_updated_at FROM cms.user_content WHERE id = $1;", [id])
             const hero = this.getFirstRow(result);
             return hero;
         } catch (error) {
@@ -147,7 +153,7 @@ export class UserModel {
 
     async getHeroVersionById(id) {
         try {
-            const result = await this.db.query("SELECT hero_updated_at, hero_url_image FROM user_content WHERE id = $1;", [id]);
+            const result = await this.db.query("SELECT hero_updated_at, hero_url_image FROM cms.user_content WHERE id = $1;", [id]);
             return this.getFirstRow(result);
         } catch (error) {
             throw error;
@@ -157,7 +163,7 @@ export class UserModel {
     async updateUserHero({ id, heroCollection, heroTitle, heroSubTitle, updated, imageUrl }) {
         try {
             const result = await this.db.query(
-                "UPDATE user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 RETURNING *;",
+                "UPDATE cms.user_content SET hero_updated_at = NOW(), hero_collection = $2, hero_title = $3, hero_subtitle = $4, hero_updated = $5, hero_url_image = $6 WHERE ID = $1 RETURNING id;",
                 [
                     id,
                     heroCollection,
@@ -263,7 +269,7 @@ export class UserModel {
     async getShippingPrice(id) {
         try {
             const result = await this.db.query(
-                "SELECT shipping FROM user_content_v2 WHERE id = $1;",
+                "SELECT shipping FROM cms.user_content WHERE id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -275,7 +281,7 @@ export class UserModel {
     async getUserContent_V2(id) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM user_content_v2 WHERE id = $1;",
+                "SELECT id, hero, footer, shipping, discount FROM cms.user_content WHERE id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -289,7 +295,7 @@ export class UserModel {
     async getUserHeroContent_V2(id) {
         try {
             const result = await this.db.query(
-                "SELECT hero FROM user_content_v2 WHERE id = $1;",
+                "SELECT hero FROM cms.user_content WHERE id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -301,7 +307,7 @@ export class UserModel {
     async updateHeroContent_V2({ id, heroCollection, heroTitle, heroSubTitle, heroImage, heroUpdated }) {
         try {
             const result = await this.db.query(
-                `UPDATE user_content_v2
+                `UPDATE cms.user_content
                     SET hero = hero || jsonb_build_object(
                         'collection', $2::text,
                         'title',      $3::text,
@@ -325,7 +331,7 @@ export class UserModel {
     async getUserFooterContent_V2(id) {
         try {
             const result = await this.db.query(
-                "SELECT footer FROM user_content_v2 WHERE id = $1;",
+                "SELECT footer FROM cms.user_content WHERE id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -337,7 +343,7 @@ export class UserModel {
     async updateFooterContent_V2({ id, footerTitle, footerLocation, footerSchedule, footerImage, footerUpdated }) {
         try {
             const result = await this.db.query(
-                `UPDATE user_content_v2
+                `UPDATE cms.user_content
                     SET footer = footer || jsonb_build_object(
                         'title',      $2::text,
                         'location',   $3::text,
@@ -361,7 +367,7 @@ export class UserModel {
     async updateShippingContent_V2({ id, shippingPrice, shippingCost, shippingUpdated }) {
         try {
             const result = await this.db.query(
-                `UPDATE user_content_v2
+                `UPDATE cms.user_content
                     SET shipping = shipping || jsonb_build_object(
                         'price',      $2::numeric,
                         'shipment_cost', $3::numeric,
@@ -383,7 +389,7 @@ export class UserModel {
     async getDiscountContent_V2(id) {
         try {
             const result = await this.db.query(
-                "SELECT discount FROM user_content_v2 WHERE id = $1;",
+                "SELECT discount FROM cms.user_content WHERE id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -395,7 +401,7 @@ export class UserModel {
     async updateDiscountContent_V2({ id, discountIsActive, discount, discountDescription }) {
         try {
             const result = await this.db.query(
-                `UPDATE user_content_v2
+                `UPDATE cms.user_content
                     SET discount = discount || jsonb_build_object(
                         'is_active',    $2::boolean,
                         'value',        $3::numeric,

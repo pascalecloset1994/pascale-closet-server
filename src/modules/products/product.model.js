@@ -10,24 +10,24 @@ export class ProductModel {
         try {
             const result = await this.db.query(`
                 SELECT
-                    p.*,
+                    p.id, p.user_id, p.name, p.description, p.brand, p.category, p.season, p.condition,
                     COALESCE(v.variants, '[]'::json) AS variants,
                     COALESCE(i.images, '[]'::json) AS images,
                     COALESCE(r.reviews, '[]'::json) AS reviews
-                FROM products_v2 p
+                FROM catalog.products p
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pv ORDER BY pv.id) AS variants
-                    FROM product_variants pv
+                    FROM catalog.product_variants pv
                     WHERE pv.product_id = p.id
                 ) v ON TRUE
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pi ORDER BY pi.sort_order, pi.id) AS images
-                    FROM product_images pi
+                    FROM catalog.product_images pi
                     WHERE pi.product_id = p.id
                 ) i ON TRUE
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pr ORDER BY pr.created_at DESC, pr.id DESC) AS reviews
-                    FROM product_reviews pr
+                    FROM catalog.product_reviews pr
                     WHERE pr.product_id = p.id
                 ) r ON TRUE
                 ORDER BY p.id DESC;
@@ -43,18 +43,18 @@ export class ProductModel {
         try {
             const result = await this.db.query(`
                 SELECT
-                    p.*,
+                    p.id, p.user_id, p.name, p.description, p.brand, p.category, p.season, p.condition,
                     COALESCE(v.variants, '[]'::json) AS variants,
                     COALESCE(i.images, '[]'::json) AS images
-                FROM products_v2 p
+                FROM catalog.products p
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pv ORDER BY pv.id) AS variants
-                    FROM product_variants pv
+                    FROM catalog.product_variants pv
                     WHERE pv.product_id = p.id
                 ) v ON TRUE
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pi ORDER BY pi.sort_order, pi.id) AS images
-                    FROM product_images pi
+                    FROM catalog.product_images pi
                     WHERE pi.product_id = p.id
                 ) i ON TRUE
                 WHERE p.user_id = $1
@@ -71,18 +71,18 @@ export class ProductModel {
         try {
             const result = await this.db.query(`
                 SELECT
-                    p.*,
+                    p.id, p.user_id, p.name, p.description, p.brand, p.category, p.season, p.condition,
                     COALESCE(v.variants, '[]'::json) AS variants,
                     COALESCE(i.images, '[]'::json) AS images
-                FROM products_v2 p
+                FROM catalog.products p
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pv ORDER BY pv.id) AS variants
-                    FROM product_variants pv
+                    FROM catalog.product_variants pv
                     WHERE pv.product_id = p.id
                 ) v ON TRUE
                 LEFT JOIN LATERAL (
                     SELECT json_agg(pi ORDER BY pi.sort_order, pi.id) AS images
-                    FROM product_images pi
+                    FROM catalog.product_images pi
                     WHERE pi.product_id = p.id
                 ) i ON TRUE
                 WHERE p.id = $1;
@@ -98,7 +98,7 @@ export class ProductModel {
 
     async getAllProducts_V2() {
         try {
-            const result = await this.db.query("SELECT * FROM products_v2;");
+            const result = await this.db.query("SELECT id, user_id, name, description, brand, category, season, condition FROM catalog.products;");
             return this.getRows(result);
         } catch (error) {
             throw error;
@@ -108,7 +108,7 @@ export class ProductModel {
     async getProductById_V2(id) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM products_v2 WHERE id = $1;",
+                "SELECT id, user_id, name, description, brand, category, season, condition FROM catalog.products WHERE id = $1;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -120,8 +120,8 @@ export class ProductModel {
     async createProduct_V2({ userId, name, description, brand, category, season, condition }) {
         try {
             const result = await this.db.query(`
-                INSERT INTO products_v2 (user_id, name, description, brand, category, season, condition)
-                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+                INSERT INTO catalog.products (user_id, name, description, brand, category, season, condition)
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id;
                 `, [
                 userId,
                 name,
@@ -140,7 +140,7 @@ export class ProductModel {
     async updateProduct_V2({ id, name, description, brand, category, season, condition }) {
         try {
             const result = await this.db.query(`
-                UPDATE products_v2
+                UPDATE catalog.products
                 SET name = $2,
                     description = $3,
                     brand = $4,
@@ -148,7 +148,7 @@ export class ProductModel {
                     season = $6,
                     condition = $7
                 WHERE id = $1
-                RETURNING *;
+                RETURNING id;
                 `, [
                 id,
                 name,
@@ -168,7 +168,7 @@ export class ProductModel {
     async deleteProduct_V2(id) {
         try {
             const result = await this.db.query(
-                "DELETE FROM products_v2 WHERE id = $1 RETURNING *;",
+                "DELETE FROM catalog.products WHERE id = $1 RETURNING id;",
                 [id]
             );
             return this.getFirstRow(result);
@@ -180,8 +180,8 @@ export class ProductModel {
     async setProductVariants_V2({ productId, size, color, price, stock, sku }) {
         try {
             const result = await this.db.query(`
-                INSERT INTO product_variants (product_id, size, color, price, stock, sku)
-                VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+                INSERT INTO catalog.product_variants (product_id, size, color, price, stock, sku)
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id;
                 `, [
                 productId,
                 size,

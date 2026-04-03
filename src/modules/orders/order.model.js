@@ -24,8 +24,8 @@ export class OrderModel {
           COALESCE(u.postal_code) AS buyer_postal_code,
           u.name AS buyer_first_name,
           u.lastname AS buyer_last_name
-        FROM orders o
-        LEFT JOIN users u ON o.user_id = u.user_id
+        FROM sales.orders o
+        LEFT JOIN auth.users u ON o.user_id = u.user_id
         ORDER BY o.created_at DESC;
       `);
       return orders;
@@ -37,7 +37,7 @@ export class OrderModel {
   async getUserOrders(user_id) {
     try {
       const orders = await this.db.query(
-        "SELECT * FROM orders WHERE user_id = $1;",
+        "SELECT id, user_id, total, status, payment_id, order_number, created_at, updated_at FROM sales.orders WHERE user_id = $1;",
         [user_id],
       );
       return orders;
@@ -49,7 +49,7 @@ export class OrderModel {
   async getOrderById(order_id) {
     try {
       const order = await this.db.query(
-        "SELECT * FROM orders WHERE id = $1;",
+        "SELECT id, user_id, total, status, payment_id, order_number, created_at, updated_at FROM sales.orders WHERE id = $1;",
         [order_id],
       );
       return order;
@@ -69,8 +69,8 @@ export class OrderModel {
         p.name AS product_name,
         oi.quantity,
         oi.price
-        FROM order_items oi
-        JOIN products p ON oi.product_id = p.id
+        FROM sales.order_items oi
+        JOIN catalog.products p ON oi.product_id = p.id
         WHERE oi.order_id = $1;
         `,
         [order_id],
@@ -82,15 +82,16 @@ export class OrderModel {
   }
 
   async createOrder({ user_id, total, items, payment_id, shipping }) {
+    const client = await this.db.connect();
     try {
-      await this.db.query("BEGIN");
+      await client.query("BEGIN");
 
       const insertOrder = `
-          INSERT INTO orders (user_id, total, payment_id, order_number, buyer_name, buyer_email, buyer_phone, buyer_address, buyer_city)
+          INSERT INTO sales.orders (user_id, total, payment_id, order_number, buyer_name, buyer_email, buyer_phone, buyer_address, buyer_city)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING id;
         `;
-      const result = await this.db.query(insertOrder, [
+      const result = await client.query(insertOrder, [
         user_id,
         total,
         payment_id,
@@ -106,12 +107,12 @@ export class OrderModel {
       const orderId = row.id;
 
       const insertItem = `
-          INSERT INTO order_items (order_id, product_id, quantity, price, color, size)
+          INSERT INTO sales.order_items (order_id, product_id, quantity, price, color, size)
           VALUES ($1, $2, $3, $4, $5, $6);
         `;
 
       for (const item of items) {
-        await this.db.query(insertItem, [
+        await client.query(insertItem, [
           orderId,
           item.id,
           item.quantity,
@@ -121,14 +122,16 @@ export class OrderModel {
         ]);
       }
 
-      await this.db.query("COMMIT");
+      await client.query("COMMIT");
       return { order_id: orderId };
     } catch (error) {
-      await this.db.query("ROLLBACK");
+      await client.query("ROLLBACK");
       throw error;
+    } finally {
+      client.release();
     }
   }
-
+sales.
   async updateStatus(order_id, status) {
     const query = `
         UPDATE orders SET status = $1, updated_at = now()
@@ -137,10 +140,10 @@ export class OrderModel {
     await this.db.query(query, [status, order_id]);
   }
 
-  async updatePaymentId(order_id, payment_id) {
-    try {
-      const query = `
-      UPDATE orders 
+  async updatsales.orders 
+      SET payment_id = $1, updated_at = NOW()
+      WHERE id = $2
+      RETURNING id, payment_idrs 
       SET payment_id = $1, updated_at = NOW()
       WHERE id = $2
       RETURNING *;
@@ -153,12 +156,12 @@ export class OrderModel {
     }
   }
 
-  async deleteOrderId(order_id) {
-    try {
-      const query = `
-      DELETE FROM orders
+  async deleteOrdesales.orders
       WHERE id = $1 
-      RETURNING *;`;
+      RETURNING id = `
+      DELETE FROM orders
+      WHERE id = $1
+RETURNING *; `;
       const result = await this.db.query(query, [order_id]);
       return result[0];
     } catch (error) {

@@ -5,12 +5,13 @@ export class PaymentModel {
 
   async createOrUpdate(payment) {
     const query = `
-          INSERT INTO payments (payment_id, order_id, user_id, status, amount, currency, payment_method, payer_email)
+          INSERT INTO sales.payments (payment_id, order_id, user_id, status, amount, currency, payment_method, payer_email)
           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           ON CONFLICT (payment_id)
           DO UPDATE SET
           status = EXCLUDED.status,
-          updated_at = NOW();
+          updated_at = NOW()
+          RETURNING id, payment_id, status;
         `;
 
     const values = [

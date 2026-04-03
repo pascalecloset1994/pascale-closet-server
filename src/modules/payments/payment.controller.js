@@ -5,7 +5,7 @@ import { sendOrderEmail, sendSellerOrderEmail } from "../../services/mail.servic
 import { neonDB } from "../../config/dbConfig.js";
 import { request, response } from "express";
 
-const GET_USER_BY_ID = "SELECT * FROM users WHERE user_id = $1;";
+const GET_USER_BY_ID = "SELECT user_id, name, lastname, email, phone, address, city FROM auth.users WHERE user_id = $1;";
 
 export class PaymentController {
   constructor({ orderModel, paymentModel, db }) {
@@ -110,7 +110,7 @@ export class PaymentController {
 
         if (generatedHash !== v1) {
           console.warn("⚠️ Firma de webhook inválida. Posible intento de suplantación.");
-          await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [
+          await this.db.query("INSERT INTO system.webhook_logs (logs) VALUES ($1);", [
             JSON.stringify({ error: "Firma inválida", xSignature, xRequestId, manifest }, null, 2),
           ]);
           return res.sendStatus(401);
@@ -121,7 +121,7 @@ export class PaymentController {
         console.warn("⚠️ MP_WEBHOOK_SECRET no configurado. Saltando validación de firma.");
       }
 
-      await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [JSON.stringify(req.body, null, 2)])
+      await this.db.query("INSERT INTO system.webhook_logs (logs) VALUES ($1);", [JSON.stringify(req.body, null, 2)])
 
       // Validar que sea una notificación de pago
       // Mercado Pago puede enviar: "payment", "payment.created", "payment.updated"
@@ -148,7 +148,7 @@ export class PaymentController {
       const paymentClient = new Payment(mpClient);
       const paymentData = await paymentClient.get({ id: paymentId });
 
-      await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [JSON.stringify({
+      await this.db.query("INSERT INTO system.webhook_logs (logs) VALUES ($1);", [JSON.stringify({
         title: "💳 Datos del pago recibidos:",
         id: paymentData.id,
         status: paymentData.status,
@@ -163,7 +163,7 @@ export class PaymentController {
 
       // Actualizar la orden según el estado
       if (order_id) {
-        await this.db.query("INSERT INTO webhook_logs (logs) VALUES ($1);", [`📦 Procesando orden ${order_id} con estado: ${status}`])
+        await this.db.query("INSERT INTO system.webhook_logs (logs) VALUES ($1);", [`📦 Procesando orden ${order_id} con estado: ${status}`])
 
         switch (status) {
           case "approved":
@@ -201,7 +201,7 @@ export class PaymentController {
                   const productId = item.product_id;
                   const quantity = item.quantity || 1;
                   await this.db.query(
-                    "UPDATE products SET stock = stock - $1, updated_at = NOW() WHERE id = $2 AND stock >= $1;",
+                    "UPDATE catalog.products SET stock = stock - $1, updated_at = NOW() WHERE id = $2 AND stock >= $1;",
                     [quantity, productId]
                   );
                 }
@@ -225,7 +225,7 @@ export class PaymentController {
                     address: buyerAddress,
                     city: buyerCity
                   });
-                  await neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + buyerEmail)]);
+                  await neonDB.query("INSERT INTO system.webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de confirmación enviado a: " + buyerEmail)]);
 
                   // Notificar al vendedor
                   await sendSellerOrderEmail({
@@ -242,7 +242,7 @@ export class PaymentController {
                     address: buyerAddress,
                     city: buyerCity,
                   });
-                  await neonDB.query("INSERT INTO webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor")]);
+                  await neonDB.query("INSERT INTO system.webhook_logs (details) VALUES($1);", [JSON.stringify("📧 Email de nueva venta enviado al vendedor")]);
                 }
               }
             } catch (emailError) {
@@ -279,11 +279,11 @@ export class PaymentController {
       // Guardar error para debug
       try {
         await this.db.query(
-          "INSERT INTO webhook_logs (error, details, created_at) VALUES ($1, $2, NOW());",
+          "INSERT INTO system.webhook_logs (error, details, created_at) VALUES ($1, $2, NOW());",
           [error.message || String(error), JSON.stringify(req.body)]
         );
       } catch (dbError) {
-        console.error("Error guardando en webhook_logs:", dbError);
+        console.error("Error guardando en system.webhook_logs:", dbError);
       }
 
       // Devolver 200 para que MP no reintente, pero el error ya se guardó
