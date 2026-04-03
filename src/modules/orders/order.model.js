@@ -131,22 +131,21 @@ export class OrderModel {
       client.release();
     }
   }
-sales.
   async updateStatus(order_id, status) {
     const query = `
-        UPDATE orders SET status = $1, updated_at = now()
+        UPDATE sales.orders SET status = $1, updated_at = now()
         WHERE id = $2;
       `;
     await this.db.query(query, [status, order_id]);
   }
 
-  async updatsales.orders 
+  async updatePaymentId(order_id, payment_id) {
+    try {
+      const query = `
+      UPDATE sales.orders 
       SET payment_id = $1, updated_at = NOW()
       WHERE id = $2
-      RETURNING id, payment_idrs 
-      SET payment_id = $1, updated_at = NOW()
-      WHERE id = $2
-      RETURNING *;
+      RETURNING id, payment_id;
     `;
       const result = await this.db.query(query, [payment_id, order_id]);
       return result[0];
@@ -156,12 +155,12 @@ sales.
     }
   }
 
-  async deleteOrdesales.orders
+  async deleteOrderId(order_id) {
+    try {
+      const query = `
+      DELETE FROM sales.orders
       WHERE id = $1 
-      RETURNING id = `
-      DELETE FROM orders
-      WHERE id = $1
-RETURNING *; `;
+      RETURNING id;`;
       const result = await this.db.query(query, [order_id]);
       return result[0];
     } catch (error) {
