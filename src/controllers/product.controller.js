@@ -439,6 +439,7 @@ export class ProductController {
   }
 
   updateProductReview = async (req, res) => {
+    const { userId: authUserId } = req;
     const { productId } = req.params;
     const { rating, comment, authorName, active, userId } = req.body;
 
@@ -449,7 +450,7 @@ export class ProductController {
         return res.status(404).json({ message: "Producto V2 no encontrado." });
       }
 
-      const currentReview = await this.model.getProductReviewByUser(productId, userId);
+      const currentReview = await this.model.getProductReviewByUser(productId, userId ?? authUserId);
 
       if (!currentReview) {
         return res.status(404).json({ message: "No se ha enontrado la reseña." })
