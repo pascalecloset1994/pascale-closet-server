@@ -197,15 +197,16 @@ export class ProductModel {
     }
 
     async createProductVariants_V2({ productId, variants }) {
+        const client = await this.db.connect();
         try {
-            await this.db.query("BEGIN;");
+            await client.query("BEGIN;");
 
             const createdVariants = [];
 
             for (const variant of variants) {
-                const result = await this.db.query(`
-                    INSERT INTO product_variants (product_id, size, color, price, stock, sku)
-                    VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+                const result = await client.query(`
+                    INSERT INTO catalog.product_variants (product_id, size, color, price, stock, sku)
+                    VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, product_id, size, color, price, stock, sku;
                     `, [
                     productId,
                     variant.size ?? null,
@@ -218,18 +219,20 @@ export class ProductModel {
                 createdVariants.push(this.getFirstRow(result));
             }
 
-            await this.db.query("COMMIT;");
+            await client.query("COMMIT;");
             return createdVariants;
         } catch (error) {
-            await this.db.query("ROLLBACK;");
+            await client.query("ROLLBACK;");
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     async getProductVariantById_V2({ productId, variantId }) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM product_variants WHERE id = $1 AND product_id = $2;",
+                "SELECT id, product_id, size, color, price, stock, sku FROM catalog.product_variants WHERE id = $1 AND product_id = $2;",
                 [variantId, productId]
             );
             return this.getFirstRow(result);
@@ -241,14 +244,14 @@ export class ProductModel {
     async updateProductVariant_V2({ productId, variantId, size, color, price, stock, sku }) {
         try {
             const result = await this.db.query(`
-                UPDATE product_variants
+                UPDATE catalog.product_variants
                 SET size = $3,
                     color = $4,
                     price = $5,
                     stock = $6,
                     sku = $7
                 WHERE id = $1 AND product_id = $2
-                RETURNING *;
+                RETURNING id, product_id, size, color, price, stock, sku;
                 `, [
                 variantId,
                 productId,
@@ -267,7 +270,7 @@ export class ProductModel {
     async deleteProductVariant_V2({ productId, variantId }) {
         try {
             const result = await this.db.query(
-                "DELETE FROM product_variants WHERE id = $1 AND product_id = $2 RETURNING *;",
+                "DELETE FROM catalog.product_variants WHERE id = $1 AND product_id = $2 RETURNING id, product_id, size, color, price, stock, sku;",
                 [variantId, productId]
             );
             return this.getFirstRow(result);
@@ -279,8 +282,8 @@ export class ProductModel {
     async setProductImages_V2(productId, url, sortOrder) {
         try {
             const result = await this.db.query(`
-                INSERT INTO product_images (product_id, url, sort_order)
-                VALUES ($1, $2, $3) RETURNING *;
+                INSERT INTO catalog.product_images (product_id, url, sort_order)
+                VALUES ($1, $2, $3) RETURNING id, product_id, url, sort_order;
                 `, [
                 productId,
                 url,
@@ -293,17 +296,18 @@ export class ProductModel {
     }
 
     async createProductImages_V2({ productId, images }) {
+        const client = await this.db.connect();
         try {
-            await this.db.query("BEGIN;");
+            await client.query("BEGIN;");
 
             const createdImages = [];
 
             for (let index = 0; index < images.length; index++) {
                 const image = images[index];
 
-                const result = await this.db.query(`
-                    INSERT INTO product_images (product_id, url, sort_order)
-                    VALUES ($1, $2, $3) RETURNING *;
+                const result = await client.query(`
+                    INSERT INTO catalog.product_images (product_id, url, sort_order)
+                    VALUES ($1, $2, $3) RETURNING id, product_id, url, sort_order;
                     `, [
                     productId,
                     image.url,
@@ -313,18 +317,20 @@ export class ProductModel {
                 createdImages.push(this.getFirstRow(result));
             }
 
-            await this.db.query("COMMIT;");
+            await client.query("COMMIT;");
             return createdImages;
         } catch (error) {
-            await this.db.query("ROLLBACK;");
+            await client.query("ROLLBACK;");
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     async getProductImageById_V2({ productId, imageId }) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM product_images WHERE id = $1 AND product_id = $2;",
+                "SELECT id, product_id, url, sort_order FROM catalog.product_images WHERE id = $1 AND product_id = $2;",
                 [imageId, productId]
             );
             return this.getFirstRow(result);
@@ -336,11 +342,11 @@ export class ProductModel {
     async updateProductImage_V2({ productId, imageId, url, sortOrder }) {
         try {
             const result = await this.db.query(`
-                UPDATE product_images
+                UPDATE catalog.product_images
                 SET url = $3,
                     sort_order = $4
                 WHERE id = $1 AND product_id = $2
-                RETURNING *;
+                RETURNING id, product_id, url, sort_order;
                 `, [
                 imageId,
                 productId,
@@ -356,7 +362,7 @@ export class ProductModel {
     async deleteProductImage_V2({ productId, imageId }) {
         try {
             const result = await this.db.query(
-                "DELETE FROM product_images WHERE id = $1 AND product_id = $2 RETURNING *;",
+                "DELETE FROM catalog.product_images WHERE id = $1 AND product_id = $2 RETURNING id, product_id, url, sort_order;",
                 [imageId, productId]
             );
             return this.getFirstRow(result);
@@ -368,7 +374,7 @@ export class ProductModel {
     async getAllProductReviews() {
         try {
             const result = await this.db.query(
-                "SELECT * FROM product_reviews;");
+                "SELECT id, product_id, user_id, rating, comment, author_name, author_avatar, active, updated, created_at, updated_at FROM catalog.product_reviews;");
             return this.getRows(result);
         } catch (error) {
             throw error;
@@ -378,7 +384,7 @@ export class ProductModel {
     async getProductReviewsByProductId(productId) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM product_reviews WHERE product_id = $1 ORDER BY created_at DESC;",
+                "SELECT id, product_id, user_id, rating, comment, author_name, author_avatar, active, updated, created_at, updated_at FROM catalog.product_reviews WHERE product_id = $1 ORDER BY created_at DESC;",
                 [productId]
             );
             return this.getRows(result);
@@ -390,7 +396,7 @@ export class ProductModel {
     async getProductReviewByUser(productId, userId) {
         try {
             const result = await this.db.query(
-                "SELECT * FROM product_reviews WHERE product_id = $1 AND user_id = $2;",
+                "SELECT id, product_id, user_id, rating, comment, author_name, author_avatar, active, updated, created_at, updated_at FROM catalog.product_reviews WHERE product_id = $1 AND user_id = $2;",
                 [productId, userId]
             );
             return this.getFirstRow(result);
@@ -402,8 +408,8 @@ export class ProductModel {
     async createProductReview({ productId, userId, rating, comment, authorName, authorAvatar }) {
         try {
             const result = await this.db.query(`
-                INSERT INTO product_reviews (product_id, user_id, rating, comment, author_name, author_avatar)
-                VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+                INSERT INTO catalog.product_reviews (product_id, user_id, rating, comment, author_name, author_avatar)
+                VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, product_id, user_id, rating, comment, author_name, author_avatar, active, updated, created_at, updated_at;
                 `,
                 [productId, userId, rating, comment, authorName, authorAvatar]
             );
@@ -414,10 +420,11 @@ export class ProductModel {
     }
 
     async updateProductReview({ productId, userId, rating, comment, authorName, active }) {
+        const client = await this.db.connect();
         try {
-            await this.db.query("BEGIN;");
-            const result = await this.db.query(`
-                UPDATE product_reviews SET rating = $3, 
+            await client.query("BEGIN;");
+            const result = await client.query(`
+                UPDATE catalog.product_reviews SET rating = $3, 
                 comment = $4, 
                 author_name = $5,
                 active = $6,
@@ -425,22 +432,24 @@ export class ProductModel {
                 updated = TRUE
                 WHERE product_id = $1
                 AND user_id = $2
-                RETURNING *;
+                RETURNING id, product_id, user_id, rating, comment, author_name, author_avatar, active, updated, created_at, updated_at;
                 `,
                 [productId, userId, rating, comment, authorName, active]
             );
-            await this.db.query("COMMIT;");
+            await client.query("COMMIT;");
             return this.getFirstRow(result);
         } catch (error) {
-            await this.db.query("ROLLBACK;");
+            await client.query("ROLLBACK;");
             throw error;
+        } finally {
+            client.release();
         }
     }
 
     async deleteProductReview(userId, productId) {
         try {
             const result = await this.db.query(`
-                DELETE FROM product_reviews WHERE user_id = $1 AND product_id = $2 RETURNING *;
+                DELETE FROM catalog.product_reviews WHERE user_id = $1 AND product_id = $2 RETURNING id, product_id, user_id, rating, comment, author_name, author_avatar, active, updated, created_at, updated_at;
                 `,
                 [userId, productId]
             );
