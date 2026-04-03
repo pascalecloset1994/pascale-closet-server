@@ -364,7 +364,7 @@ export class UserModel {
                 `UPDATE user_content_v2
                     SET shipping = shipping || jsonb_build_object(
                         'price',      $2::numeric,
-                        'shipping_cost', $3::numeric,
+                        'shipment_cost', $3::numeric,
                         'updated',     $4::boolean,
                         'updated_at', NOW()::text
                     )
