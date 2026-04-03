@@ -406,7 +406,7 @@ export class ProductController {
         return res.status(404).json({ message: "Producto V2 no encontrado." });
       }
 
-      const result = await neonDB.query("SELECT * FROM users WHERE user_id = $1;", [userId]);
+      const result = await neonDB.query("SELECT user_id, name, lastname, avatar FROM auth.users WHERE user_id = $1;", [userId]);
       const user = result.rows[0]
       const review = await this.model.createProductReview({
         productId, userId: user.user_id,
