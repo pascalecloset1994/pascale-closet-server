@@ -1,4 +1,4 @@
-import { updateToBlob } from "../services/vercelBlob.service.js";
+import { updateToBlob } from "../../services/vercelBlob.service.js";
 
 export class UserController {
   constructor({ model }) {

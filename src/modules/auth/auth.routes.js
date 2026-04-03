@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/auth.controller.js";
-import { AuthModel } from "../models/auth.model.js";
+import { AuthController } from "./auth.controller.js";
+import { AuthModel } from "./auth.model.js";
 
 export const createAuthRouter = ({ db }) => {
   const authRouter = Router();

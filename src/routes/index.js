@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { createProductsRouter } from "./product.routes.js";
-import { createAuthRouter } from "./auth.routes.js";
-import { createUserRouter } from "./user.routes.js";
-import { createPaymentRouter } from "./payment.routes.js";
-import { createOrderRouter } from "./order.routes.js";
+import { createProductsRouter } from "../modules/products/product.routes.js";
+import { createAuthRouter } from "../modules/auth/auth.routes.js";
+import { createUserRouter } from "../modules/users/user.routes.js";
+import { createPaymentRouter } from "../modules/payments/payment.routes.js";
+import { createOrderRouter } from "../modules/orders/order.routes.js";
+import { createLogsRouter } from "../modules/logs/logs.routes.js";
 
 export const createAppRouter = ({ db }) => {
    const appRouter = Router();
@@ -13,17 +14,7 @@ export const createAppRouter = ({ db }) => {
    appRouter.use(createProductsRouter({ db }));
    appRouter.use(createOrderRouter({ db }));
    appRouter.use("/payment", createPaymentRouter({ db }));
-
-   // Logger temporal
-   appRouter.post("/loger", async (req, res) => {
-      try {
-         const { log } = req.body
-         await db.query("INSERT INTO logger_pascale (message) VALUES ($1)", [log])
-         res.status(200)
-      } catch (error) {
-         res.status(500).json({ message: "No se ha podido conectar al servidor." })
-      }
-   });
+   appRouter.use(createLogsRouter({ db }));
 
    return appRouter;
 };

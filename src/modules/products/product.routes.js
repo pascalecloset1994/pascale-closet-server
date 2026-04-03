@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { ProductController } from "../controllers/product.controller.js";
-import { isAuth } from "../middlewares/isAuth.js";
-import { ProductModel } from "../models/product.model.js";
+import { ProductController } from "./product.controller.js";
+import { isAuth } from "../../middlewares/isAuth.js";
+import { ProductModel } from "./product.model.js";
 
 export const createProductsRouter = ({ db }) => {
   const productsRouter = Router();

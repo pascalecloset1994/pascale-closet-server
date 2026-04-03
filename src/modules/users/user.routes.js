@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { UserController } from "../controllers/user.controller.js";
-import { isAuth } from "../middlewares/isAuth.js";
+import { UserController } from "./user.controller.js";
+import { isAuth } from "../../middlewares/isAuth.js";
 import multer from "multer";
-import { UserModel } from "../models/user.models.js";
+import { UserModel } from "./user.model.js";
 
 export const createUserRouter = ({ db }) => {
   const userRouter = Router();

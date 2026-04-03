@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { PaymentController } from "../controllers/payment.controller.js";
-import { OrderModel } from "../models/order.models.js";
-import { PaymentModel } from "../models/payment.models.js";
-import { isAuth } from "../middlewares/isAuth.js";
+import { PaymentController } from "./payment.controller.js";
+import { OrderModel } from "../orders/order.model.js";
+import { PaymentModel } from "./payment.models.js";
+import { isAuth } from "../../middlewares/isAuth.js";
 
 export const createPaymentRouter = ({ db }) => {
   const paymentRouter = Router();

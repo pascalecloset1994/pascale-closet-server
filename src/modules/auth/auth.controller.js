@@ -3,11 +3,11 @@ import {
   createAccessToken,
   createResetToken,
   verifyResetToken,
-} from "../utils/jwt.js";
+} from "../../utils/jwt.js";
 import {
   sendEmail,
   sendRecoveryPasswordEmail,
-} from "../services/mail.service.js";
+} from "../../services/mail.service.js";
 
 const FRONTEND_URL =
   process.env.FRONTEND_URL || "https://pascalecloset.com";

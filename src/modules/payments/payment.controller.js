@@ -1,8 +1,8 @@
 import crypto from "crypto";
 import { Preference, Payment } from "mercadopago";
-import { mpClient } from "../services/mercadoPago.service.js";
-import { sendOrderEmail, sendSellerOrderEmail } from "../services/mail.service.js";
-import { neonDB } from "../config/dbConfig.js";
+import { mpClient } from "../../services/mercadoPago.service.js";
+import { sendOrderEmail, sendSellerOrderEmail } from "../../services/mail.service.js";
+import { neonDB } from "../../config/dbConfig.js";
 import { request, response } from "express";
 
 const GET_USER_BY_ID = "SELECT * FROM users WHERE user_id = $1;";
