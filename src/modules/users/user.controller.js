@@ -281,7 +281,7 @@ export class UserController {
         shippingUpdate: shippingUpdate ?? true,
       });
 
-      return res.status(200).json({ message: "Precio de envío actualizado.", shipping });
+      return res.status(200).json({ message: `${shippingPrice ? "Precio" : "Costo"} de envío actualizado.`, shipping });
     } catch (error) {
       return res.status(500).json({ message: error.message });
     }
