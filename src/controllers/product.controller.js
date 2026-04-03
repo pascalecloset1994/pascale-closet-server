@@ -458,7 +458,7 @@ export class ProductController {
 
       const updatedReview = await this.model.updateProductReview({
         productId,
-        userId,
+        userId: userId ?? authUserId,
         rating: rating ? rating : currentReview.rating,
         comment: comment ? comment : currentReview.comment,
         authorName: authorName ? authorName : currentReview.author_name,
