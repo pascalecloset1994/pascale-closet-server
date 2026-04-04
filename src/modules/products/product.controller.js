@@ -409,7 +409,8 @@ export class ProductController {
       const result = await neonDB.query("SELECT user_id, name, lastname, avatar FROM auth.users WHERE user_id = $1;", [userId]);
       const user = result.rows[0]
       const review = await this.model.createProductReview({
-        productId, userId: user.user_id,
+        productId,
+        userId: user.user_id,
         rating,
         comment,
         authorName: user.name + " " + user.lastname,
